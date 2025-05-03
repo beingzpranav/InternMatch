@@ -38,7 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
       { to: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
       { to: '/internships', label: 'Browse Internships', icon: <Briefcase size={20} /> },
       { to: '/applications', label: 'My Applications', icon: <FileText size={20} /> },
-      { to: '/resume-builder', label: 'Resume Builder', icon: <FileEdit size={20} /> },
+     
       { to: '/bookmarks', label: 'Bookmarks', icon: <Bookmark size={20} /> },
       { to: '/messages', label: 'Messages', icon: <MessageSquare size={20} /> },
       { to: '/profile', label: 'Profile', icon: <Settings size={20} /> },
