@@ -154,6 +154,64 @@ const CompanyApplications = () => {
     });
   };
 
+  // Add CSV export functionality
+  const exportToCSV = () => {
+    if (filteredApplications.length === 0) {
+      toast.error('No applications to export');
+      return;
+    }
+
+    try {
+      // Create CSV content
+      let csvContent = 'data:text/csv;charset=utf-8,';
+      
+      // Headers
+      csvContent += 'Student Name,Email,Internship,Status,Applied Date,Updated Date\n';
+      
+      // Add each application
+      filteredApplications.forEach(application => {
+        const row = [
+          application.student?.full_name || 'Unknown Student',
+          application.student?.email || 'No Email',
+          application.internship?.title || 'Unknown Internship',
+          application.status.charAt(0).toUpperCase() + application.status.slice(1),
+          new Date(application.created_at).toLocaleString(),
+          new Date(application.updated_at).toLocaleString()
+        ];
+        
+        // Escape any commas in the data
+        const escapedRow = row.map(field => {
+          // If field contains comma, newline or double-quote, enclose in double quotes
+          const formattedField = String(field).replace(/"/g, '""');
+          if (formattedField.includes(',') || formattedField.includes('\n') || formattedField.includes('"')) {
+            return `"${formattedField}"`;
+          }
+          return formattedField;
+        });
+        
+        csvContent += escapedRow.join(',') + '\n';
+      });
+      
+      // Create download link
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `company_applications_${new Date().toISOString().replace('T', '_').split('.')[0]}.csv`);
+      document.body.appendChild(link);
+      
+      // Trigger download
+      link.click();
+      
+      // Clean up
+      document.body.removeChild(link);
+      
+      toast.success('Applications exported successfully');
+    } catch (error) {
+      console.error('Error exporting applications:', error);
+      toast.error('Failed to export applications. See console for details.');
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -203,6 +261,15 @@ const CompanyApplications = () => {
                 </option>
               ))}
             </select>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              icon={<Download size={16} />}
+              onClick={exportToCSV}
+            >
+              Export CSV
+            </Button>
           </div>
         </div>
       </div>
@@ -343,7 +410,7 @@ const CompanyApplications = () => {
                 <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                   <h4 className="font-medium text-gray-900">Applied for: {application.internship?.title}</h4>
                   <p className="text-sm text-gray-500 mt-1">
-                    Applied on {new Date(application.created_at).toLocaleDateString()}
+                    Applied on {new Date(application.created_at).toLocaleString()}
                   </p>
                 </div>
 

@@ -377,7 +377,7 @@ const InternshipsList = () => {
                     <div className="flex items-center text-sm text-gray-500">
                       <Clock size={16} className="mr-1.5" />
                       {internship.deadline ? (
-                        <span>Apply by {new Date(internship.deadline).toLocaleDateString()}</span>
+                        <span>Apply by {new Date(internship.deadline).toLocaleString()}</span>
                       ) : (
                         <span>Open until filled</span>
                       )}

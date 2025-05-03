@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { LayoutDashboard, Users, Building2, Briefcase, FileText, Clock } from 'lucide-react';
+import { LayoutDashboard, Users, Building2, Briefcase, FileText, Clock, BarChart3, Video } from 'lucide-react';
 
 const AdminDashboard: React.FC = () => {
   const [stats, setStats] = useState({
     totalStudents: 0,
     totalCompanies: 0,
     totalInternships: 0,
-    activeApplications: 0
+    activeApplications: 0,
+    totalInterviews: 0,
+    pendingInterviews: 0
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -49,12 +51,28 @@ const AdminDashboard: React.FC = () => {
         .eq('status', 'pending');
 
       if (applicationError) throw applicationError;
+      
+      // Get interview counts
+      const { count: totalInterviewCount, error: interviewError } = await supabase
+        .from('interviews')
+        .select('*', { count: 'exact', head: true });
+        
+      if (interviewError) {
+        console.error('Note: Interviews table may not exist yet:', interviewError);
+      }
+      
+      const { count: pendingInterviewCount } = await supabase
+        .from('interviews')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'scheduled');
 
       setStats({
         totalStudents: studentCount || 0,
         totalCompanies: companyCount || 0,
         totalInternships: internshipCount || 0,
-        activeApplications: applicationCount || 0
+        activeApplications: applicationCount || 0,
+        totalInterviews: totalInterviewCount || 0,
+        pendingInterviews: pendingInterviewCount || 0
       });
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
@@ -110,6 +128,20 @@ const AdminDashboard: React.FC = () => {
           icon={<FileText className="text-primary-500" size={24} />} 
           link="/admin/applications" 
         />
+        
+        <CardLink 
+          title="Analytics" 
+          description="View application metrics and performance dashboards" 
+          icon={<BarChart3 className="text-primary-500" size={24} />} 
+          link="/admin/analytics" 
+        />
+        
+        <CardLink 
+          title="Interviews" 
+          description="Track and manage scheduled interviews" 
+          icon={<Video className="text-primary-500" size={24} />} 
+          link="/admin/interviews" 
+        />
       </div>
       
       <div className="mt-8 bg-white p-6 rounded-lg shadow-md">
@@ -145,12 +177,28 @@ const AdminDashboard: React.FC = () => {
               </span>
               <span className="font-medium text-primary-600">{stats.totalInternships}</span>
             </p>
-            <p className="flex justify-between">
+            <p className="flex justify-between border-b pb-2">
               <span className="flex items-center">
                 <FileText className="text-gray-400 mr-2" size={18} />
                 Active Applications:
               </span>
               <span className="font-medium text-primary-600">{stats.activeApplications}</span>
+            </p>
+            <p className="flex justify-between border-b pb-2">
+              <span className="flex items-center">
+                <Video className="text-gray-400 mr-2" size={18} />
+                Pending Interviews:
+              </span>
+              <span className="font-medium text-primary-600">{stats.pendingInterviews}</span>
+            </p>
+            <p className="flex justify-between">
+              <span className="flex items-center">
+                <BarChart3 className="text-gray-400 mr-2" size={18} />
+                <Link to="/admin/analytics" className="text-primary-600 hover:underline">
+                  View Application Analytics
+                </Link>
+              </span>
+              <span className="font-medium text-primary-600">→</span>
             </p>
           </div>
         )}

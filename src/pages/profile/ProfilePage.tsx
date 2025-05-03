@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-import { User, Building2, Mail, MapPin, Globe, GraduationCap, FileText } from 'lucide-react';
+import { User, Building2, Mail, MapPin, Globe, GraduationCap, FileText, Upload } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/authStore';
 import Button from '../../components/ui/Button';
@@ -26,8 +26,10 @@ const ProfilePage = () => {
     degree: '',
     graduation_year: '',
     resume_url: '',
+    avatar_url: '',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string>('');
 
   useEffect(() => {
     if (user) {
@@ -44,9 +46,21 @@ const ProfilePage = () => {
         degree: user.degree || '',
         graduation_year: user.graduation_year?.toString() || '',
         resume_url: user.resume_url || '',
+        avatar_url: user.avatar_url || '',
       });
     }
   }, [user]);
+
+  useEffect(() => {
+    try {
+      const savedLogoUrl = localStorage.getItem('company_logo_url');
+      if (savedLogoUrl) {
+        setLogoUrl(savedLogoUrl);
+      }
+    } catch (err) {
+      console.warn('Could not retrieve logo URL from localStorage:', err);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,30 +68,69 @@ const ProfilePage = () => {
 
     setIsLoading(true);
     try {
+      // Create update object with all form fields
+      const updateData = {
+        ...formData,
+        graduation_year: formData.graduation_year ? parseInt(formData.graduation_year) : null,
+        updated_at: new Date().toISOString(),
+      };
+
+      // Log the update for debugging
+      console.log('Updating profile with:', updateData);
+      
       const { error } = await supabase
         .from('profiles')
-        .update({
-          ...formData,
-          graduation_year: formData.graduation_year ? parseInt(formData.graduation_year) : null,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updateData)
         .eq('id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Profile update error:', error);
+        if (error.message.includes('security policy') || error.message.includes('permission')) {
+          throw new Error('Permission denied. You do not have access to update this profile.');
+        } else if (error.message.includes('foreign key constraint')) {
+          throw new Error('Update failed due to a database constraint. Please contact support.');
+        } else {
+          throw error;
+        }
+      }
 
       await getUser();
       setIsEditing(false);
       toast.success('Profile updated successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
+      toast.error(error.message || 'Failed to update profile. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleFileUpload = (url: string, file: File) => {
-    setFormData(prev => ({ ...prev, resume_url: url }));
+    if (url) {
+      setFormData(prev => ({ ...prev, resume_url: url }));
+    }
+  };
+
+  const handleAvatarUpload = (url: string, file: File) => {
+    if (url) {
+      setFormData(prev => ({ ...prev, avatar_url: url }));
+    }
+  };
+
+  const handleLogoUpload = (url: string, file: File) => {
+    if (url) {
+      // Just store the logo URL in a local state variable
+      // We'll handle it separately from profile updates
+      setLogoUrl(url);
+      toast.success('Company logo uploaded successfully!');
+      
+      // Store the logo URL in localStorage to persist it across sessions
+      try {
+        localStorage.setItem('company_logo_url', url);
+      } catch (err) {
+        console.warn('Could not save logo URL to localStorage:', err);
+      }
+    }
   };
 
   return (
@@ -101,6 +154,48 @@ const ProfilePage = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Profile Photo Section */}
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Profile Photo</h2>
+          <div className="flex items-center">
+            <div className="mr-6">
+              {formData.avatar_url ? (
+                <img 
+                  src={formData.avatar_url} 
+                  alt="Profile" 
+                  className="w-24 h-24 rounded-full object-cover border-2 border-gray-200"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
+                  <User size={40} className="text-gray-400" />
+                </div>
+              )}
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">
+                {user?.role === 'student' ? 'Your Profile Photo' : 'Your Profile Photo'}
+              </h3>
+              {isEditing ? (
+                <FileUpload 
+                  onFileUpload={handleAvatarUpload}
+                  currentFileUrl={formData.avatar_url}
+                  accept="image/*"
+                  maxSize={5}
+                  buttonText="Upload Photo"
+                  fieldName="avatar_url"
+                />
+              ) : (
+                <p className="text-sm text-gray-500">
+                  {formData.avatar_url 
+                    ? 'Your profile photo is visible to recruiters and other users' 
+                    : 'Upload a photo to personalize your profile'}
+                </p>
+              )}
+            </div>
+          </div>
+        </Card>
+
+        {/* Basic Information */}
         <Card className="p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -148,6 +243,45 @@ const ProfilePage = () => {
         {user?.role === 'company' && (
           <Card className="p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Company Information</h2>
+            
+            {/* Company Logo Section */}
+            <div className="mb-6 pb-6 border-b border-gray-100">
+              <div className="flex items-center">
+                <div className="mr-6">
+                  {logoUrl ? (
+                    <img 
+                      src={logoUrl} 
+                      alt="Company Logo" 
+                      className="w-24 h-24 rounded-lg object-contain border-2 border-gray-200 p-1"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-lg bg-gray-200 flex items-center justify-center">
+                      <Building2 size={40} className="text-gray-400" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">Company Logo</h3>
+                  {isEditing ? (
+                    <FileUpload 
+                      onFileUpload={handleLogoUpload}
+                      currentFileUrl={logoUrl}
+                      accept="image/*"
+                      maxSize={5}
+                      buttonText="Upload Logo"
+                      fieldName="company_logo"
+                    />
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      {logoUrl 
+                        ? 'Your company logo is visible on your listings and profile' 
+                        : 'Upload your company logo to improve brand recognition'}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input
                 label="Company Name"
@@ -224,6 +358,7 @@ const ProfilePage = () => {
                       currentFileUrl={formData.resume_url}
                       accept=".pdf,.doc,.docx"
                       maxSize={10}
+                      fieldName="resume_url"
                     />
                   )}
                 </div>

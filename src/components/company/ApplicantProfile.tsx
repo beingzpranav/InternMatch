@@ -52,7 +52,15 @@ const ApplicantProfile: React.FC<ApplicantProfileProps> = ({
         <div className="flex items-center justify-between p-5 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center text-primary-700">
-              <User size={20} />
+              {student.avatar_url ? (
+                <img 
+                  src={student.avatar_url} 
+                  alt={student.full_name || 'Student Profile'}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              ) : (
+                <User size={20} />
+              )}
             </div>
             <h2 className="text-xl font-bold text-gray-900">{student.full_name || 'Student Profile'}</h2>
           </div>
@@ -110,6 +118,15 @@ const ApplicantProfile: React.FC<ApplicantProfileProps> = ({
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
+                    {student.avatar_url && (
+                      <div className="flex justify-center mb-4">
+                        <img 
+                          src={student.avatar_url} 
+                          alt={student.full_name || 'Student Profile'}
+                          className="w-32 h-32 rounded-full object-cover border-2 border-gray-200"
+                        />
+                      </div>
+                    )}
                     <div className="flex items-center">
                       <Mail className="w-5 h-5 text-gray-500 mr-3" />
                       <div>

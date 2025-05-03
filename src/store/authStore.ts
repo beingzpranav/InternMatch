@@ -8,6 +8,7 @@ interface AuthState {
   error: string | null;
   signUp: (email: string, password: string, role: UserRole, userData: Record<string, any>) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithGithub: () => Promise<void>;
   signOut: () => Promise<void>;
   getUser: () => Promise<void>;
   sendEmailVerification: (email: string) => Promise<void>;
@@ -95,6 +96,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
+  signInWithGithub: async () => {
+    try {
+      set({ isLoading: true, error: null, isEmailVerificationError: false });
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: window.location.origin + '/dashboard',
+        }
+      });
+
+      if (error) throw error;
+      
+      // Note: User will be set after redirect via getUser()
+    } catch (error) {
+      console.error('Error during GitHub sign in:', error);
+      set({ error: (error as Error).message, isLoading: false, isEmailVerificationError: false });
+    }
+  },
+
   signOut: async () => {
     try {
       set({ isLoading: true, error: null });
@@ -149,13 +170,39 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         throw profileError;
       }
 
-      // If no profile found, create a minimal one
+      // If no profile found, create a minimal one using auth data
       if (!profileData) {
         const defaultRole = 'student'; // Default role for new users
+        
+        // Extract information from OAuth providers if available
+        const metadata = authUser.user_metadata || {};
+        const userIdentity = authUser.identities?.[0]?.identity_data || {};
+        
+        // Extract name and avatar data
+        let fullName = metadata.full_name || '';
+        if (!fullName) {
+          fullName = [
+            metadata.name, 
+            userIdentity.name, 
+            userIdentity.full_name,
+            `${userIdentity.given_name || ''} ${userIdentity.family_name || ''}`.trim(),
+          ].find(name => name && name.trim() !== '') || '';
+        }
+        
+        const avatarUrl = metadata.avatar_url || 
+                          metadata.picture || 
+                          userIdentity.avatar_url || 
+                          userIdentity.picture || 
+                          '';
+        
         const newProfile = {
           id: authUser.id,
           email: authUser.email,
           role: defaultRole,
+          full_name: fullName,
+          avatar_url: avatarUrl,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         };
 
         // Create a new profile
@@ -185,24 +232,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   sendEmailVerification: async (email) => {
     try {
       set({ isLoading: true, error: null });
-      
+
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email,
-        options: {
-          emailRedirectTo: window.location.origin + '/auth/signin',
-        },
       });
-      
+
       if (error) throw error;
-      
-      set({ 
-        isLoading: false, 
-        error: 'Verification email sent! Please check your inbox.'
-      });
+
+      set({ isLoading: false });
     } catch (error) {
       console.error('Error sending verification email:', error);
       set({ error: (error as Error).message, isLoading: false });
     }
-  },
+  }
 }));

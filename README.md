@@ -1,143 +1,159 @@
 # InternMatch
 
-![InternMatch](https://img.shields.io/badge/Version-1.0.0-blue)
-![React](https://img.shields.io/badge/React-18.3.1-61DAFB?logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.5.3-3178C6?logo=typescript)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4.1-38B2AC?logo=tailwind-css)
-
-InternMatch is a modern platform connecting talented students with quality internship opportunities. The application helps streamline the internship search and application process for students while providing companies an efficient way to find qualified interns.
-
-🌐 [Live Demo: internmatch.pranavk.tech](https://internmatch.pranavk.tech)
-
-![InternMatch Preview](public/internmatch-preview.png)
+InternMatch is a comprehensive platform connecting students with companies for internship opportunities. The application streamlines the internship search, application, and management process for both students and companies.
 
 ## Features
 
 ### For Students
-- 🔍 **Advanced internship search** with filters for industry, location, and duration
-- 📑 **Application tracking** to monitor application status
-- 🔖 **Bookmarking system** to save interesting opportunities
-- 📝 **Profile management** to showcase skills and experience
+
+- **Internship Discovery**: Browse and search for internships based on location, industry, and required skills
+- **Application Management**: Track status of applications and receive updates
+- **Profile Management**: Create and maintain professional profiles with education and skills
+- **Resume Management**: Upload, store and share resumes with potential employers
+- **Bookmarking**: Save favorite internship listings for later viewing
+- **Messaging**: Communicate directly with companies
+- **Interview Scheduling**: View and manage upcoming interviews
+- **Notifications**: Receive alerts about application status changes and messages
 
 ### For Companies
-- 📢 **Internship posting** with detailed descriptions and requirements
-- 👥 **Applicant management** to review and process applications
-- 📊 **Analytics dashboard** for insights on posting performance
-- 🏢 **Company profile** to showcase work culture and benefits
 
-### For Administrators
-- 👮‍♂️ **User management** for both students and companies
-- 🛡️ **Content moderation** for internship postings
-- 📈 **Platform analytics** to monitor usage and trends
-- ⚙️ **System configuration** for platform settings
+- **Internship Creation**: Post detailed internship listings with requirements and deadlines
+- **Applicant Management**: Review, filter, and respond to student applications
+- **Candidate Evaluation**: Compare and assess applicant qualifications
+- **Interview Scheduling**: Arrange and manage interviews with candidates
+- **Messaging**: Communicate directly with applicants
+- **Company Profile**: Showcase company information, culture, and opportunities
+- **Notifications**: Receive alerts about new applications and messages
 
 ## Technology Stack
 
-- **Frontend**: React, TypeScript, Tailwind CSS, Framer Motion
-- **State Management**: Zustand
-- **Backend**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
-- **Notifications**: React Hot Toast
-- **Icons**: Lucide React
-- **Build Tool**: Vite
+- **Frontend**: React.js with TypeScript
+- **Backend**: Supabase (PostgreSQL database with built-in authentication and APIs)
+- **Styling**: Tailwind CSS
+- **Storage**: Supabase Storage for file uploads
+- **Authentication**: Supabase Auth with email/password and social login options
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v18 or newer)
+- Node.js (v14 or higher)
 - npm or yarn
+- Supabase account
 
 ### Installation
 
 1. Clone the repository:
-   ```bash
+   ```
    git clone https://github.com/yourusername/internmatch.git
    cd internmatch
    ```
 
 2. Install dependencies:
-   ```bash
+   ```
    npm install
-   # or
-   yarn install
    ```
 
-3. Setup environment variables:
-   ```bash
-   cp .env.example .env
+3. Set up environment variables:
+   Create a `.env` file in the root directory with the following variables:
    ```
-   Fill in the necessary environment variables:
-   - `VITE_SUPABASE_URL`: Your Supabase project URL
-   - `VITE_SUPABASE_KEY`: Your Supabase public API key
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   SUPABASE_URL=your_supabase_url
+   SUPABASE_SERVICE_KEY=your_supabase_service_key
+   ```
 
-4. Start the development server:
-   ```bash
+4. Set up the database:
+   ```
+   # For Windows
+   ./apply_full_migration.bat
+   
+   # For Unix/macOS
+   chmod +x ./apply_full_migration.sh
+   ./apply_full_migration.sh
+   
+   # Directly with Node.js
+   node apply_full_migration.js
+   ```
+
+5. Start the development server:
+   ```
    npm run dev
-   # or
-   yarn dev
    ```
 
-5. Open your browser and navigate to [http://localhost:5173](http://localhost:5173)
+## Database Structure
+
+InternMatch uses a PostgreSQL database managed through Supabase with the following key tables:
+
+- **profiles**: User profiles (students, companies, admins)
+- **internships**: Internship listings created by companies
+- **applications**: Student applications for internships
+- **bookmarks**: Student bookmarks for internships
+- **messages**: Direct messages between users
+- **notifications**: System notifications for users
+- **interviews**: Interview scheduling information
+- **resume_sections**: Resume builder components for students
+
+See `DATABASE_SETUP.md` for detailed information about the database schema and migration process.
 
 ## Project Structure
 
 ```
 internmatch/
-├── public/              # Static assets
+├── public/              # Static files
 ├── src/
 │   ├── components/      # Reusable UI components
+│   │   ├── admin/       # Admin-specific components
 │   │   ├── auth/        # Authentication components
-│   │   ├── layout/      # Layout components
-│   │   ├── shared/      # Shared components
-│   │   └── ui/          # Basic UI components
-│   ├── context/         # React context providers
-│   ├── db/              # Database connections & models
-│   ├── lib/             # Utility libraries
+│   │   ├── company/     # Company-specific components
+│   │   ├── layout/      # Layout components (header, footer, etc.)
+│   │   ├── student/     # Student-specific components
+│   │   └── ui/          # Base UI components
+│   ├── contexts/        # React contexts
+│   ├── hooks/           # Custom React hooks
+│   ├── lib/             # Utility functions
 │   ├── pages/           # Page components
 │   │   ├── admin/       # Admin pages
 │   │   ├── company/     # Company pages
-│   │   ├── profile/     # Profile pages
 │   │   └── student/     # Student pages
-│   ├── store/           # Zustand stores
-│   ├── styles/          # Global styles & theme
-│   ├── types/           # TypeScript types
-│   ├── utils/           # Utility functions
-│   ├── App.tsx          # Root component
-│   ├── index.css        # Global CSS
-│   └── main.tsx         # Entry point
-├── .env                 # Environment variables
-├── .env.example         # Example environment variables
-├── package.json         # Dependencies and scripts
-├── tailwind.config.js   # Tailwind CSS configuration
-├── tsconfig.json        # TypeScript configuration
-└── vite.config.ts       # Vite configuration
+│   ├── types/           # TypeScript type definitions
+│   ├── App.tsx          # Main application component
+│   └── main.tsx         # Application entry point
+├── supabase/
+│   └── migrations/      # Database migration files
+├── .env                 # Environment variables (not in repository)
+├── apply_full_migration.js    # Migration script
+├── apply_full_migration.bat   # Windows migration script wrapper
+├── apply_full_migration.sh    # Unix migration script wrapper
+├── DATABASE_SETUP.md    # Database setup documentation
+├── CLEANUP.md           # Project cleanup documentation
+└── README.md            # This file
 ```
 
-## Deployment
+## UI Features
 
-### Building for Production
+### Mobile Responsiveness
+InternMatch is fully responsive and optimized for mobile devices with:
 
-```bash
-npm run build
-# or
-yarn build
-```
+- **Bottom Navigation Bar**: Easy access to key sections on mobile devices
+- **Touch-Optimized UI**: Larger touch targets for better mobile interaction
+- **Slide-Out Navigation Menu**: Access to all application features
+- **Responsive Layouts**: Adapts to various screen sizes from phones to desktops
+- **Optimized Forms**: Mobile-friendly form inputs and controls
 
-This will create a `dist` directory with the compiled assets.
+### Time Display Feature
 
-### Deploying to Production
+InternMatch includes comprehensive time display with all dates, showing both date and time information using the `toLocaleString()` method. This provides users with more detailed timestamps for:
 
-The application is configured to be deployed to any static hosting platform. For the demo site, we're using:
-
-- Domain: internmatch.pranavk.tech
-- Hosting: Netlify/Vercel
+- Application submissions
+- Internship posting and deadlines
+- Interview scheduling
+- Messages and notifications
+- Profile updates
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the project
+1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add some amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
@@ -145,18 +161,9 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Contact
-
-- **Pranav Khandelwal** - [pranavk.tech](https://pranavk.tech)
-- **Email**: contact@pranavk.tech
-- **GitHub**: [@beingzpranav](https://github.com/beingzpranav)
-- **LinkedIn**: [beingzpranav](https://linkedin.com/in/beingzpranav)
-- **Twitter**: [@beingzpranav_](https://x.com/beingzpranav_)
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Acknowledgments
 
-- UI design inspiration from Figma Community templates
-- Icons provided by [Lucide Icons](https://lucide.dev/)
-- All the contributors who invested their time and expertise 
+- Thanks to all contributors who have helped with the development of InternMatch
+- Special thanks to the Supabase team for their excellent platform and documentation 

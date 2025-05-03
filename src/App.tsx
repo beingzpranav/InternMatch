@@ -17,6 +17,7 @@ import InternshipsList from './pages/student/InternshipsList';
 import InternshipDetail from './pages/student/InternshipDetail';
 import StudentApplications from './pages/student/Applications';
 import Bookmarks from './pages/student/Bookmarks';
+
 import ProfilePage from './pages/profile/ProfilePage';
 
 // Company pages
@@ -31,9 +32,16 @@ import AdminCompanies from './pages/admin/Companies';
 import AdminStudents from './pages/admin/Students';
 import AdminInternships from './pages/admin/Internships';
 import AdminApplications from './pages/admin/Applications';
+import ApplicationAnalytics from './pages/admin/ApplicationAnalytics';
+import AdminInterviews from './pages/admin/Interviews';
+import CompanyProfile from './pages/admin/CompanyProfile';
 
 // Shared pages
 import Messages from './pages/Messages';
+
+// Legal pages
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 
 // Landing page
 import LandingPage from './pages/LandingPage';
@@ -51,32 +59,24 @@ function App() {
       <Toaster 
         position="top-right"
         toastOptions={{
-          duration: 4000,
+          duration: 5000,
           style: {
             background: '#fff',
             color: '#333',
-            boxShadow: '0 3px 10px rgba(0, 0, 0, 0.1)',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
             borderRadius: '8px',
-            padding: '16px'
+            padding: '12px 16px',
           },
           success: {
-            style: {
-              border: '1px solid #10B981',
-              borderLeft: '4px solid #10B981'
-            },
             iconTheme: {
               primary: '#10B981',
-              secondary: '#FFF',
+              secondary: '#fff',
             },
           },
           error: {
-            style: {
-              border: '1px solid #EF4444',
-              borderLeft: '4px solid #EF4444'
-            },
             iconTheme: {
               primary: '#EF4444',
-              secondary: '#FFF',
+              secondary: '#fff',
             },
           },
         }}
@@ -84,6 +84,8 @@ function App() {
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
         
         {/* Auth routes */}
         <Route path="/auth" element={<AuthLayout />}>
@@ -135,9 +137,12 @@ function App() {
           {/* Admin routes */}
           <Route path="admin" element={user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/dashboard" replace />} />
           <Route path="admin/companies" element={user?.role === 'admin' ? <AdminCompanies /> : <Navigate to="/dashboard" replace />} />
+          <Route path="admin/companies/:id" element={user?.role === 'admin' ? <CompanyProfile /> : <Navigate to="/dashboard" replace />} />
           <Route path="admin/students" element={user?.role === 'admin' ? <AdminStudents /> : <Navigate to="/dashboard" replace />} />
           <Route path="admin/internships" element={user?.role === 'admin' ? <AdminInternships /> : <Navigate to="/dashboard" replace />} />
           <Route path="admin/applications" element={user?.role === 'admin' ? <AdminApplications /> : <Navigate to="/dashboard" replace />} />
+          <Route path="admin/analytics" element={user?.role === 'admin' ? <ApplicationAnalytics /> : <Navigate to="/dashboard" replace />} />
+          <Route path="admin/interviews" element={user?.role === 'admin' ? <AdminInterviews /> : <Navigate to="/dashboard" replace />} />
         </Route>
 
         {/* Fallback route */}

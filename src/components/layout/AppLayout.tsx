@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/authStore';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import Sidebar from './Sidebar';
+import BottomNav from './BottomNav';
 import { Toaster } from 'react-hot-toast';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -37,19 +38,39 @@ const AppLayout = () => {
 
   const toggleMobileSidebar = () => {
     setIsMobileSidebarOpen(!isMobileSidebarOpen);
+    // Prevent body scrolling when sidebar is open
+    if (!isMobileSidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
   };
+
+  // Clean up body overflow on unmount
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, []);
+
+  // Close sidebar on route change
+  useEffect(() => {
+    setIsMobileSidebarOpen(false);
+    document.body.style.overflow = 'auto';
+  }, [navigate]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
       
       {/* Mobile sidebar toggle button */}
-      <div className="md:hidden fixed bottom-4 right-4 z-40">
+      <div className="md:hidden fixed bottom-5 left-5 z-50">
         <motion.button
           onClick={toggleMobileSidebar}
           className="bg-primary-600 text-white p-3 rounded-full shadow-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          aria-label="Toggle navigation menu"
         >
           {isMobileSidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </motion.button>
@@ -82,24 +103,30 @@ const AppLayout = () => {
               
               {/* Sidebar */}
               <motion.div
-                className="absolute left-0 top-0 bottom-0 w-72 bg-white shadow-xl"
+                className="absolute left-0 top-0 bottom-0 w-full max-w-xs sm:max-w-sm bg-white shadow-xl overflow-y-auto"
                 initial={{ x: -280 }}
                 animate={{ x: 0 }}
                 exit={{ x: -280 }}
                 transition={{ ease: "easeOut", duration: 0.3 }}
               >
-                <Sidebar onItemClick={() => setIsMobileSidebarOpen(false)} />
+                <Sidebar onItemClick={() => setIsMobileSidebarOpen(false)} isMobile={true} />
               </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <main className="flex-1 p-3 sm:p-6 md:p-8 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto pb-20 md:pb-8">
           <Outlet />
         </main>
       </div>
       
-      <Footer />
+      {/* Bottom navigation for mobile */}
+      <BottomNav />
+      
+      {/* Only show footer on desktop or when BottomNav isn't visible */}
+      <div className="hidden md:block">
+        <Footer />
+      </div>
       
       <Toaster
         position="top-center"

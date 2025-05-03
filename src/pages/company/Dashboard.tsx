@@ -279,7 +279,7 @@ const CompanyDashboard = () => {
                           </Link>
                         </p>
                         <p className="text-xs text-gray-400 mt-1">
-                          {new Date(application.created_at).toLocaleDateString()}
+                          {new Date(application.created_at).toLocaleString()}
                         </p>
                       </div>
                     </div>
@@ -366,7 +366,7 @@ const CompanyDashboard = () => {
                           )}
                         </div>
                         <span className="text-xs text-gray-500">
-                          Posted on {new Date(internship.created_at).toLocaleDateString()}
+                          Posted on {new Date(internship.created_at).toLocaleString()}
                         </span>
                       </div>
                     </div>

@@ -5,7 +5,7 @@ import { useAuthStore } from '../../store/authStore';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
-import { Mail, Lock, User, Building2, GraduationCap } from 'lucide-react';
+import { Mail, Lock, User, Building2, GraduationCap, Github } from 'lucide-react';
 import { UserRole } from '../../types';
 import { motion } from 'framer-motion';
 
@@ -19,7 +19,7 @@ const SignUpForm = () => {
   const [university, setUniversity] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   
-  const { signUp, isLoading, error } = useAuthStore();
+  const { signUp, signInWithGithub, isLoading, error } = useAuthStore();
 
   const validateForm = () => {
     const formErrors: Record<string, string> = {};
@@ -65,6 +65,15 @@ const SignUpForm = () => {
     }
   };
 
+  const handleGithubSignUp = async () => {
+    try {
+      await signInWithGithub();
+      toast.success('Signing in with GitHub...');
+    } catch (err) {
+      // Error is already set in the store
+    }
+  };
+
   return (
     <motion.div 
       className="bg-white shadow-md rounded-xl p-6 sm:p-8"
@@ -72,7 +81,7 @@ const SignUpForm = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="text-center mb-8">
+      <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Create an account</h2>
         <p className="mt-2 text-gray-600">
           Or{' '}
@@ -88,14 +97,37 @@ const SignUpForm = () => {
         </div>
       )}
 
+      {/* Social Sign Up Buttons */}
+      <div className="flex flex-col gap-3 mb-6">
+        <Button
+          onClick={handleGithubSignUp}
+          variant="outline"
+          fullWidth
+          disabled={isLoading}
+          icon={<Github size={18} />}
+          className="border-gray-300 text-gray-800 bg-white hover:bg-gray-100"
+        >
+          Continue with GitHub
+        </Button>
+      </div>
+
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-300"></div>
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-2 bg-white text-gray-500">Or continue with email</span>
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <Select
-          label="I am a"
+          label="Account Type"
           value={role}
           onChange={(e) => setRole(e.target.value as UserRole)}
           options={[
-            { value: 'student', label: 'Student looking for internships' },
-            { value: 'company', label: 'Company hiring interns' },
+            { value: 'student', label: 'Student' },
+            { value: 'company', label: 'Company' }
           ]}
         />
 
@@ -110,25 +142,13 @@ const SignUpForm = () => {
           required
         />
 
-        <Input
-          label="Email address"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter your email"
-          error={errors.email}
-          icon={<Mail size={18} />}
-          autoComplete="email"
-          required
-        />
-
         {role === 'company' && (
           <Input
             label="Company Name"
             type="text"
             value={companyName}
             onChange={(e) => setCompanyName(e.target.value)}
-            placeholder="Enter company name"
+            placeholder="Enter your company name"
             error={errors.companyName}
             icon={<Building2 size={18} />}
             required
@@ -137,16 +157,27 @@ const SignUpForm = () => {
 
         {role === 'student' && (
           <Input
-            label="University/College"
+            label="University"
             type="text"
             value={university}
             onChange={(e) => setUniversity(e.target.value)}
-            placeholder="Enter university or college name"
+            placeholder="Enter your university"
             error={errors.university}
             icon={<GraduationCap size={18} />}
             required
           />
         )}
+        
+        <Input
+          label="Email Address"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Enter your email"
+          error={errors.email}
+          icon={<Mail size={18} />}
+          required
+        />
 
         <Input
           label="Password"
@@ -156,7 +187,6 @@ const SignUpForm = () => {
           placeholder="Create a password"
           error={errors.password}
           icon={<Lock size={18} />}
-          autoComplete="new-password"
           required
         />
 
@@ -168,31 +198,19 @@ const SignUpForm = () => {
           placeholder="Confirm your password"
           error={errors.confirmPassword}
           icon={<Lock size={18} />}
-          autoComplete="new-password"
           required
         />
 
-        <div className="pt-2">
+        <div className="mt-4">
           <Button
             type="submit"
             fullWidth
             isLoading={isLoading}
+            className="py-2.5"
           >
-            Sign up
+            Create Account
           </Button>
         </div>
-
-        <p className="text-xs text-gray-500 mt-4">
-          By signing up, you agree to our{' '}
-          <Link to="/terms" className="text-primary-600 hover:underline">
-            Terms of Service
-          </Link>{' '}
-          and{' '}
-          <Link to="/privacy" className="text-primary-600 hover:underline">
-            Privacy Policy
-          </Link>
-          .
-        </p>
       </form>
     </motion.div>
   );

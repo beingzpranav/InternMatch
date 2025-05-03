@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Eye, Edit, Trash2, Search, CheckCircle, XCircle, Clock, User, ExternalLink, Download, MessageSquare } from 'lucide-react';
+import { FileText, Eye, Edit, Trash2, Search, CheckCircle, XCircle, Clock, User, ExternalLink, Download, MessageSquare, SortAsc, SortDesc, Calendar, Filter, ArrowUpDown } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
@@ -11,6 +11,8 @@ import ApplicantProfile from '../../components/company/ApplicantProfile';
 import ApplicationDetails from '../../components/shared/ApplicationDetails';
 import ResumeViewer from '../../components/shared/ResumeViewer';
 import MessageButton from '../../components/shared/MessageButton';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 interface Application {
   id: string;
@@ -58,6 +60,22 @@ const AdminApplications: React.FC = () => {
   const [selectedStudent, setSelectedStudent] = useState<StudentProfile | null>(null);
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [viewingResume, setViewingResume] = useState<{student: StudentProfile, url: string} | null>(null);
+  
+  // Enhanced filtering options
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [companyFilter, setCompanyFilter] = useState('all');
+  const [internshipFilter, setInternshipFilter] = useState('all');
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  
+  // Sorting options
+  const [sortField, setSortField] = useState('created_at');
+  const [sortDirection, setSortDirection] = useState('desc');
+  
+  // Lists for filters
+  const [companies, setCompanies] = useState<{id: string, name: string}[]>([]);
+  const [internships, setInternships] = useState<{id: string, title: string}[]>([]);
 
   useEffect(() => {
     fetchApplications();
@@ -88,6 +106,24 @@ const AdminApplications: React.FC = () => {
       
       // @ts-ignore - We know this is safe because we're getting data from our API
       setApplications(data);
+      
+      // Extract unique companies and internships for filters
+      const uniqueCompanies = Array.from(
+        new Set(data.map((app: any) => JSON.stringify({
+          id: app.internship?.company_id,
+          name: app.internship?.company?.company_name
+        })))
+      ).map(str => JSON.parse(str));
+      
+      const uniqueInternships = Array.from(
+        new Set(data.map((app: any) => JSON.stringify({
+          id: app.internship_id,
+          title: app.internship?.title
+        })))
+      ).map(str => JSON.parse(str));
+      
+      setCompanies(uniqueCompanies);
+      setInternships(uniqueInternships);
     } catch (error) {
       console.error('Error fetching applications:', error);
       toast.error('Failed to load applications');
@@ -186,12 +222,146 @@ const AdminApplications: React.FC = () => {
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
+  
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+  
+  const resetFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('all');
+    setCompanyFilter('all');
+    setInternshipFilter('all');
+    setStartDate(null);
+    setEndDate(null);
+  };
 
-  const filteredApplications = applications.filter(application => 
-    application.student?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    application.internship?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    application.internship?.company?.company_name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Add CSV export functionality
+  const exportToCSV = () => {
+    if (filteredApplications.length === 0) {
+      toast.error('No applications to export');
+      return;
+    }
+
+    try {
+      // Create CSV content
+      let csvContent = 'data:text/csv;charset=utf-8,';
+      
+      // Headers
+      csvContent += 'Student Name,Email,Internship,Company,Status,Applied Date,Updated Date\n';
+      
+      // Add each application
+      filteredApplications.forEach(application => {
+        const row = [
+          application.student?.full_name || 'Unknown Student',
+          application.student?.email || 'No Email',
+          application.internship?.title || 'Unknown Internship',
+          application.internship?.company?.company_name || 'Unknown Company',
+          application.status.charAt(0).toUpperCase() + application.status.slice(1),
+          new Date(application.created_at).toLocaleString(),
+          new Date(application.updated_at).toLocaleString()
+        ];
+        
+        // Escape any commas in the data
+        const escapedRow = row.map(field => {
+          // If field contains comma, newline or double-quote, enclose in double quotes
+          const formattedField = String(field).replace(/"/g, '""');
+          if (formattedField.includes(',') || formattedField.includes('\n') || formattedField.includes('"')) {
+            return `"${formattedField}"`;
+          }
+          return formattedField;
+        });
+        
+        csvContent += escapedRow.join(',') + '\n';
+      });
+      
+      // Create download link
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `applications_export_${new Date().toISOString().replace('T', '_').split('.')[0]}.csv`);
+      document.body.appendChild(link);
+      
+      // Trigger download
+      link.click();
+      
+      // Clean up
+      document.body.removeChild(link);
+      
+      toast.success('Applications exported successfully');
+    } catch (error) {
+      console.error('Error exporting applications:', error);
+      toast.error('Failed to export applications. See console for details.');
+    }
+  };
+
+  const filteredApplications = applications
+    .filter(application => {
+      // Search term filter
+      const matchesSearch = 
+        application.student?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        application.internship?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        application.internship?.company?.company_name?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Status filter
+      const matchesStatus = statusFilter === 'all' || application.status === statusFilter;
+      
+      // Company filter
+      const matchesCompany = companyFilter === 'all' || application.internship?.company_id === companyFilter;
+      
+      // Internship filter
+      const matchesInternship = internshipFilter === 'all' || application.internship_id === internshipFilter;
+      
+      // Date range filter
+      const applicationDate = new Date(application.created_at);
+      const matchesDateRange = 
+        (!startDate || applicationDate >= startDate) && 
+        (!endDate || applicationDate <= endDate);
+      
+      return matchesSearch && matchesStatus && matchesCompany && matchesInternship && matchesDateRange;
+    })
+    .sort((a, b) => {
+      let valueA, valueB;
+      
+      // Determine sort values based on the selected field
+      switch (sortField) {
+        case 'student':
+          valueA = a.student?.full_name?.toLowerCase() || '';
+          valueB = b.student?.full_name?.toLowerCase() || '';
+          break;
+        case 'internship':
+          valueA = a.internship?.title?.toLowerCase() || '';
+          valueB = b.internship?.title?.toLowerCase() || '';
+          break;
+        case 'company':
+          valueA = a.internship?.company?.company_name?.toLowerCase() || '';
+          valueB = b.internship?.company?.company_name?.toLowerCase() || '';
+          break;
+        case 'status':
+          valueA = a.status;
+          valueB = b.status;
+          break;
+        case 'created_at':
+          valueA = new Date(a.created_at).getTime();
+          valueB = new Date(b.created_at).getTime();
+          break;
+        default:
+          valueA = a[sortField as keyof Application];
+          valueB = b[sortField as keyof Application];
+      }
+      
+      // Sorting direction
+      if (sortDirection === 'asc') {
+        return valueA > valueB ? 1 : -1;
+      } else {
+        return valueA < valueB ? 1 : -1;
+      }
+    });
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -228,6 +398,13 @@ const AdminApplications: React.FC = () => {
 
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Manage Applications</h1>
+        <Button 
+          variant="outline" 
+          icon={<Filter size={16} />} 
+          onClick={() => setShowFilters(!showFilters)}
+        >
+          {showFilters ? 'Hide Filters' : 'Show Filters'}
+        </Button>
       </div>
       
       <div className="bg-white p-6 rounded-lg shadow-md mb-8">
@@ -247,6 +424,118 @@ const AdminApplications: React.FC = () => {
           </div>
         </div>
         
+        {showFilters && (
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="reviewing">Reviewing</option>
+                  <option value="accepted">Accepted</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Company
+                </label>
+                <select
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  value={companyFilter}
+                  onChange={(e) => setCompanyFilter(e.target.value)}
+                >
+                  <option value="all">All Companies</option>
+                  {companies.map(company => (
+                    <option key={company.id} value={company.id}>
+                      {company.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Internship
+                </label>
+                <select
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  value={internshipFilter}
+                  onChange={(e) => setInternshipFilter(e.target.value)}
+                >
+                  <option value="all">All Internships</option>
+                  {internships.map(internship => (
+                    <option key={internship.id} value={internship.id}>
+                      {internship.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  From Date
+                </label>
+                <DatePicker
+                  selected={startDate}
+                  onChange={(date) => setStartDate(date)}
+                  selectsStart
+                  startDate={startDate}
+                  endDate={endDate}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  placeholderText="Select start date"
+                  dateFormat="MMM d, yyyy"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  To Date
+                </label>
+                <DatePicker
+                  selected={endDate}
+                  onChange={(date) => setEndDate(date)}
+                  selectsEnd
+                  startDate={startDate}
+                  endDate={endDate}
+                  minDate={startDate}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  placeholderText="Select end date"
+                  dateFormat="MMM d, yyyy"
+                />
+              </div>
+            </div>
+            
+            <div className="flex justify-end mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={resetFilters}
+                className="mr-2"
+              >
+                Reset Filters
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setShowFilters(false)}
+              >
+                Apply Filters
+              </Button>
+            </div>
+          </div>
+        )}
+        
         {isLoading ? (
           <div className="text-center py-8">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
@@ -257,11 +546,61 @@ const AdminApplications: React.FC = () => {
             <table className="min-w-full bg-white">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="py-3 px-4 text-left">Student</th>
-                  <th className="py-3 px-4 text-left">Internship</th>
-                  <th className="py-3 px-4 text-left">Company</th>
-                  <th className="py-3 px-4 text-left">Status</th>
-                  <th className="py-3 px-4 text-left">Applied Date</th>
+                  <th className="py-3 px-4 text-left cursor-pointer" onClick={() => handleSort('student')}>
+                    <div className="flex items-center">
+                      Student
+                      {sortField === 'student' && (
+                        <span className="ml-1">
+                          {sortDirection === 'asc' ? <SortAsc size={16} /> : <SortDesc size={16} />}
+                        </span>
+                      )}
+                      {sortField !== 'student' && <ArrowUpDown size={16} className="ml-1 text-gray-400" />}
+                    </div>
+                  </th>
+                  <th className="py-3 px-4 text-left cursor-pointer" onClick={() => handleSort('internship')}>
+                    <div className="flex items-center">
+                      Internship
+                      {sortField === 'internship' && (
+                        <span className="ml-1">
+                          {sortDirection === 'asc' ? <SortAsc size={16} /> : <SortDesc size={16} />}
+                        </span>
+                      )}
+                      {sortField !== 'internship' && <ArrowUpDown size={16} className="ml-1 text-gray-400" />}
+                    </div>
+                  </th>
+                  <th className="py-3 px-4 text-left cursor-pointer" onClick={() => handleSort('company')}>
+                    <div className="flex items-center">
+                      Company
+                      {sortField === 'company' && (
+                        <span className="ml-1">
+                          {sortDirection === 'asc' ? <SortAsc size={16} /> : <SortDesc size={16} />}
+                        </span>
+                      )}
+                      {sortField !== 'company' && <ArrowUpDown size={16} className="ml-1 text-gray-400" />}
+                    </div>
+                  </th>
+                  <th className="py-3 px-4 text-left cursor-pointer" onClick={() => handleSort('status')}>
+                    <div className="flex items-center">
+                      Status
+                      {sortField === 'status' && (
+                        <span className="ml-1">
+                          {sortDirection === 'asc' ? <SortAsc size={16} /> : <SortDesc size={16} />}
+                        </span>
+                      )}
+                      {sortField !== 'status' && <ArrowUpDown size={16} className="ml-1 text-gray-400" />}
+                    </div>
+                  </th>
+                  <th className="py-3 px-4 text-left cursor-pointer" onClick={() => handleSort('created_at')}>
+                    <div className="flex items-center">
+                      Applied Date
+                      {sortField === 'created_at' && (
+                        <span className="ml-1">
+                          {sortDirection === 'asc' ? <SortAsc size={16} /> : <SortDesc size={16} />}
+                        </span>
+                      )}
+                      {sortField !== 'created_at' && <ArrowUpDown size={16} className="ml-1 text-gray-400" />}
+                    </div>
+                  </th>
                   <th className="py-3 px-4 text-left">Actions</th>
                 </tr>
               </thead>
@@ -291,7 +630,7 @@ const AdminApplications: React.FC = () => {
                         {getStatusBadge(application.status)}
                       </td>
                       <td className="py-3 px-4">
-                        {new Date(application.created_at).toLocaleDateString()}
+                        {new Date(application.created_at).toLocaleString()}
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex space-x-2">
@@ -342,7 +681,9 @@ const AdminApplications: React.FC = () => {
                 ) : (
                   <tr className="border-b border-gray-200">
                     <td colSpan={6} className="py-6 px-4 text-center text-gray-500">
-                      {searchTerm ? 'No applications found matching your search' : 'No applications found'}
+                      {searchTerm || statusFilter !== 'all' || companyFilter !== 'all' || internshipFilter !== 'all' || startDate || endDate ? 
+                        'No applications found matching your filters' : 
+                        'No applications found'}
                     </td>
                   </tr>
                 )}
@@ -350,6 +691,23 @@ const AdminApplications: React.FC = () => {
             </table>
           </div>
         )}
+        
+        <div className="mt-4 flex justify-between items-center">
+          <div className="text-sm text-gray-500">
+            Showing {filteredApplications.length} of {applications.length} applications
+          </div>
+          <div className="flex items-center">
+            <span className="text-sm text-gray-500 mr-2">Export:</span>
+            <Button
+              variant="outline"
+              size="sm"
+              icon={<FileText size={16} />}
+              onClick={exportToCSV}
+            >
+              CSV
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );

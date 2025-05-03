@@ -4,19 +4,19 @@ import { Github, Twitter, Linkedin, Instagram, Mail, Globe } from 'lucide-react'
 import { motion } from 'framer-motion';
 
 const socialLinks = [
-  { icon: <Github size={20} />, href: "#", label: "GitHub" },
-  { icon: <Twitter size={20} />, href: "#", label: "Twitter" },
-  { icon: <Linkedin size={20} />, href: "#", label: "LinkedIn" },
-  { icon: <Instagram size={20} />, href: "#", label: "Instagram" },
+  { icon: <Github size={20} />, href: "https://github.com", label: "GitHub" },
+  { icon: <Twitter size={20} />, href: "https://twitter.com", label: "Twitter" },
+  { icon: <Linkedin size={20} />, href: "https://linkedin.com", label: "LinkedIn" },
+  { icon: <Instagram size={20} />, href: "https://instagram.com", label: "Instagram" },
 ];
 
 const footerLinks = [
-  { label: "About", href: "#" },
-  { label: "Privacy", href: "#" },
-  { label: "Terms", href: "#" },
-  { label: "Contact", href: "#" },
-  { label: "Careers", href: "#" },
-  { label: "Help Center", href: "#" },
+  { label: "About", href: "/" },
+  { label: "Privacy Policy", href: "/privacy-policy" },
+  { label: "Terms of Service", href: "/terms-of-service" },
+  { label: "Contact", href: "mailto:contact@internmatch.com" },
+  { label: "Careers", href: "/" },
+  { label: "Help Center", href: "/" },
 ];
 
 // Development team members
@@ -89,6 +89,8 @@ const Footer = () => {
                 <motion.a
                   key={index}
                   href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-gray-400 hover:text-primary-500 transition-colors"
                   aria-label={link.label}
                   whileHover={{ scale: 1.1 }}
@@ -102,18 +104,24 @@ const Footer = () => {
 
           {/* Quick links */}
           <div className="col-span-1">
-            <h3 className="font-semibold text-gray-900 mb-4">Quick Links</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">Legal</h3>
             <ul className="space-y-2">
-              {footerLinks.slice(0, 3).map((link, index) => (
-                <li key={index}>
-                  <Link 
-                    to={link.href} 
-                    className="text-gray-500 hover:text-primary-600 transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
+              <li>
+                <Link 
+                  to="/privacy-policy" 
+                  className="text-gray-500 hover:text-primary-600 transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/terms-of-service" 
+                  className="text-gray-500 hover:text-primary-600 transition-colors"
+                >
+                  Terms of Service
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -121,14 +129,23 @@ const Footer = () => {
           <div className="col-span-1">
             <h3 className="font-semibold text-gray-900 mb-4">Resources</h3>
             <ul className="space-y-2">
-              {footerLinks.slice(3).map((link, index) => (
+              {footerLinks.slice(3, 6).map((link, index) => (
                 <li key={index}>
-                  <Link 
-                    to={link.href} 
-                    className="text-gray-500 hover:text-primary-600 transition-colors"
-                  >
-                    {link.label}
-                  </Link>
+                  {link.href.startsWith('mailto:') ? (
+                    <a 
+                      href={link.href} 
+                      className="text-gray-500 hover:text-primary-600 transition-colors"
+                    >
+                      {link.label}
+                    </a>
+                  ) : (
+                    <Link 
+                      to={link.href} 
+                      className="text-gray-500 hover:text-primary-600 transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -172,9 +189,11 @@ const Footer = () => {
             &copy; {currentYear} InternMatch. All rights reserved.
           </p>
           
-          <p className="text-gray-500 text-sm text-center md:text-right">
-            Made with <span className="text-red-500">♥</span> by <a href="https://pranavk.tech" className="text-primary-500 hover:text-primary-600 transition-colors">Pranav Khandelwal</a>
-          </p>
+          <div className="flex space-x-4 text-sm text-gray-500">
+            <Link to="/privacy-policy" className="hover:text-primary-600 transition-colors">Privacy</Link>
+            <span>|</span>
+            <Link to="/terms-of-service" className="hover:text-primary-600 transition-colors">Terms</Link>
+          </div>
         </div>
       </div>
     </footer>

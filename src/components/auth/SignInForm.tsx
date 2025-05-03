@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import { useAuthStore } from '../../store/authStore';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
-import { Mail, Lock, RefreshCw } from 'lucide-react';
+import { Mail, Lock, RefreshCw, Github, CornerUpRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const fadeInUp = {
@@ -17,7 +17,14 @@ const SignInForm = () => {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   
-  const { signIn, sendEmailVerification, isLoading, error, isEmailVerificationError } = useAuthStore();
+  const { 
+    signIn, 
+    signInWithGithub,
+    sendEmailVerification, 
+    isLoading, 
+    error, 
+    isEmailVerificationError 
+  } = useAuthStore();
 
   const validateForm = () => {
     const formErrors: Record<string, string> = {};
@@ -37,6 +44,14 @@ const SignInForm = () => {
     try {
       await signIn(email, password);
       toast.success('Signed in successfully!');
+    } catch (err) {
+      // Error is already set in the store
+    }
+  };
+
+  const handleGithubSignIn = async () => {
+    try {
+      await signInWithGithub();
     } catch (err) {
       // Error is already set in the store
     }
@@ -102,6 +117,29 @@ const SignInForm = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Social Login Buttons */}
+      <motion.div variants={fadeInUp} className="flex flex-col gap-3 mb-6">
+        <Button
+          onClick={handleGithubSignIn}
+          variant="outline"
+          fullWidth
+          disabled={isLoading}
+          icon={<Github size={18} />}
+          className="border-gray-300 text-gray-800 bg-white hover:bg-gray-100"
+        >
+          Continue with GitHub
+        </Button>
+      </motion.div>
+
+      <motion.div variants={fadeInUp} className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-300"></div>
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-2 bg-white text-gray-500">Or continue with email</span>
+        </div>
+      </motion.div>
 
       <motion.form variants={fadeInUp} onSubmit={handleSubmit} className="space-y-5">
         <Input

@@ -48,8 +48,6 @@ const AdminCompanies: React.FC = () => {
   const handleView = (id: string) => {
     // Navigate to company profile view
     navigate(`/admin/companies/${id}`);
-    // Since this page doesn't exist yet, we'll show a toast
-    toast('Company profile view is not yet implemented');
   };
 
   const handleEdit = (id: string) => {

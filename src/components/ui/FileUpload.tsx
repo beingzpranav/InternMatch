@@ -4,12 +4,15 @@ import { supabase } from '../../lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 import Button from './Button';
 import { toast } from 'react-hot-toast';
+import { useAuthStore } from '../../store/authStore';
 
 interface FileUploadProps {
   onFileUpload: (url: string, file: File) => void;
   accept?: string;
   maxSize?: number; // Size in MB
   currentFileUrl?: string | null;
+  buttonText?: string;
+  fieldName?: string; // Which field to update (avatar_url, resume_url, company_logo_url)
 }
 
 interface UploadProgressEvent {
@@ -22,7 +25,10 @@ const FileUpload: React.FC<FileUploadProps> = ({
   accept = '.pdf,.doc,.docx',
   maxSize = 5, // 5 MB default
   currentFileUrl = null,
+  buttonText = 'Choose File',
+  fieldName = '',
 }) => {
+  const { user } = useAuthStore();
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -43,19 +49,28 @@ const FileUpload: React.FC<FileUploadProps> = ({
     }
     
     // Validate file type
-    const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase();
-    const allowedExtensions = accept.split(',').map(ext => ext.trim().replace('.', ''));
-    
-    if (fileExtension && !allowedExtensions.includes(fileExtension)) {
-      setUploadError(`Only ${accept} files are allowed`);
-      return;
+    if (accept.includes('image/*')) {
+      // Handle image/* type validation
+      if (!selectedFile.type.startsWith('image/')) {
+        setUploadError(`Only image files are allowed`);
+        return;
+      }
+    } else {
+      // Regular file extension validation for non-image/* types
+      const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase();
+      const allowedExtensions = accept.split(',').map(ext => ext.trim().replace('.', ''));
+      
+      if (fileExtension && !allowedExtensions.includes(fileExtension)) {
+        setUploadError(`Only ${accept} files are allowed`);
+        return;
+      }
     }
     
     setFile(selectedFile);
   };
 
   const uploadFile = async () => {
-    if (!file) return;
+    if (!file || !user) return;
     
     try {
       setUploading(true);
@@ -64,47 +79,50 @@ const FileUpload: React.FC<FileUploadProps> = ({
       // Generate a unique file name to prevent collisions
       const fileExt = file.name.split('.').pop();
       const fileName = `${uuidv4()}.${fileExt}`;
-      const filePath = `public/${fileName}`;
       
-      // Upload file to storage
+      // Determine the storage folder based on file type
+      let folder = 'files';
+      if (fieldName === 'avatar_url' || accept.includes('image/*')) {
+        folder = 'uploads';
+      } else if (fieldName === 'resume_url') {
+        folder = 'resumes';
+      } else if (fieldName === 'company_logo_url') {
+        folder = 'logos';
+      }
+      
+      // Use a user-specific path for better organization and security
+      const filePath = `${user.id}/${folder}/${fileName}`;
+      
+      // Upload to the uploads bucket
       const { data, error } = await supabase.storage
-        .from('resumes')
+        .from('uploads')
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: true
         });
       
       if (error) {
-        // If bucket doesn't exist, try a different one
         console.error('Upload error:', error);
+        
+        // Handle different types of errors
         if (error.message?.includes('bucket') || error.message?.includes('not found')) {
-          console.log('Trying upload to uploads bucket instead');
-          const { data: altData, error: altError } = await supabase.storage
-            .from('uploads')
-            .upload(filePath, file, {
-              cacheControl: '3600',
-              upsert: true
-            });
-          
-          if (altError) throw altError;
+          setUploadError(`Storage bucket not found. Please ask the administrator to create the 'uploads' bucket in Supabase.`);
+        } else if (error.message?.includes('security policy') || error.message?.includes('permission')) {
+          setUploadError(`Permission denied. The system administrator needs to configure proper storage permissions.`);
+          console.error('RLS Policy Error:', error);
         } else {
           throw error;
         }
+        setUploading(false);
+        return;
       }
       
-      // Get public URL from either bucket
-      let publicUrl;
-      try {
-        const { data: urlData } = supabase.storage
-          .from('resumes')
-          .getPublicUrl(filePath);
-        publicUrl = urlData.publicUrl;
-      } catch (e) {
-        const { data: urlData } = supabase.storage
-          .from('uploads')
-          .getPublicUrl(filePath);
-        publicUrl = urlData.publicUrl;
-      }
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('uploads')
+        .getPublicUrl(filePath);
+      
+      const publicUrl = urlData.publicUrl;
       
       // Set the current URL
       setCurrentUrl(publicUrl);
@@ -112,13 +130,24 @@ const FileUpload: React.FC<FileUploadProps> = ({
       // Update progress for UI
       setProgress(100);
       
-      // Notify parent component
+      // Notify parent component first (this is the critical part - the parent component will handle the profile update)
       onFileUpload(publicUrl, file);
       
       setUploading(false);
       
-      // Show success message
-      toast.success('Resume uploaded successfully!', {
+      // Show success message based on file type
+      let successMessage = 'File uploaded successfully!';
+      if (fieldName === 'avatar_url') {
+        successMessage = 'Profile photo uploaded successfully!';
+      } else if (fieldName === 'resume_url') {
+        successMessage = 'Resume uploaded successfully!';
+      } else if (fieldName === 'company_logo_url') {
+        successMessage = 'Company logo uploaded successfully!';
+      } else if (file.type.startsWith('image/')) {
+        successMessage = 'Image uploaded successfully!';
+      }
+      
+      toast.success(successMessage, {
         duration: 4000,
         icon: '🎉'
       });
@@ -196,7 +225,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         </div>
         <div className="space-y-2">
           <p className="text-gray-700">
-            Drag and drop your resume here, or click to browse
+            Drag and drop your file here, or click to browse
           </p>
           <p className="text-xs text-gray-500">
             Accepts {accept} files up to {maxSize}MB
@@ -223,7 +252,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
             size="sm"
           >
             <Upload size={16} className="mr-2" />
-            Choose File
+            {buttonText}
           </Button>
         </div>
       </div>

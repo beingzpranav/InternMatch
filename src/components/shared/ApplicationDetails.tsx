@@ -13,7 +13,8 @@ import {
   ExternalLink,
   CheckCircle,
   XCircle,
-  MessageSquare
+  MessageSquare,
+  Video
 } from 'lucide-react';
 import { Application } from '../../types';
 import Button from '../ui/Button';
@@ -23,6 +24,7 @@ import ApplicantProfile from '../company/ApplicantProfile';
 import Dialog from '../ui/Dialog';
 import MessageForm from './MessageForm';
 import { toast } from 'react-hot-toast';
+import InterviewScheduler from './InterviewScheduler';
 
 interface ApplicationDetailsProps {
   application: Application;
@@ -41,6 +43,7 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
   const [viewStudentProfile, setViewStudentProfile] = useState(false);
   const [messageDialogOpen, setMessageDialogOpen] = useState(false);
   const [messageRecipient, setMessageRecipient] = useState<'applicant' | 'company'>('applicant');
+  const [showInterviewScheduler, setShowInterviewScheduler] = useState(false);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -104,6 +107,19 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
     if (application.resume_url) {
       setActiveTab('resume');
     }
+  };
+
+  const handleScheduleInterview = () => {
+    setShowInterviewScheduler(true);
+  };
+
+  const handleInterviewScheduled = () => {
+    setShowInterviewScheduler(false);
+    // Refresh the application data if needed
+    if (onUpdateStatus) {
+      onUpdateStatus('reviewing');
+    }
+    toast.success('Interview scheduled successfully');
   };
 
   return (
@@ -208,16 +224,31 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
                                 Last updated: {formatDate(application.updated_at || application.created_at)}
                               </span>
                             </div>
-                            {application.resume_url && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                icon={<FileText size={16} />}
-                                onClick={handleViewResume}
-                              >
-                                View Resume
-                              </Button>
-                            )}
+                            <div className="flex space-x-2">
+                              {application.resume_url && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  icon={<FileText size={16} />}
+                                  onClick={handleViewResume}
+                                >
+                                  View Resume
+                                </Button>
+                              )}
+                              
+                              {(application.status === 'pending' || application.status === 'reviewing') && 
+                               application.student && !isAdmin && (
+                                <Button
+                                  size="sm"
+                                  variant="primary"
+                                  icon={<Video size={16} />}
+                                  onClick={handleScheduleInterview}
+                                >
+                                  Schedule Interview
+                                </Button>
+                              )}
+                            </div>
+                            
                             {onUpdateStatus && (
                               <div className="flex space-x-2">
                                 {application.status !== 'accepted' && (
@@ -279,7 +310,15 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
                         <div className="space-y-4">
                           <div className="flex items-start space-x-3">
                             <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 flex-shrink-0">
-                              <User size={20} />
+                              {application.student?.avatar_url ? (
+                                <img 
+                                  src={application.student.avatar_url} 
+                                  alt={`${application.student.full_name || 'Applicant'}`}
+                                  className="w-10 h-10 rounded-full object-cover"
+                                />
+                              ) : (
+                                <User size={20} />
+                              )}
                             </div>
                             <div>
                               <h4 className="font-medium text-gray-900">
@@ -516,6 +555,20 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
               }
             />
           </Dialog>
+        )}
+      </AnimatePresence>
+
+      {/* Interview Scheduler Dialog */}
+      <AnimatePresence>
+        {showInterviewScheduler && application.student && (
+          <InterviewScheduler
+            applicationId={application.id}
+            studentId={application.student.id}
+            studentName={application.student.full_name || 'Applicant'}
+            studentEmail={application.student.email || ''}
+            onClose={() => setShowInterviewScheduler(false)}
+            onSuccess={handleInterviewScheduled}
+          />
         )}
       </AnimatePresence>
     </>

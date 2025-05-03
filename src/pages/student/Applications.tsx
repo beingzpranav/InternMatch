@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, CheckCircle, AlertCircle, FileEdit, Filter, X, FileText } from 'lucide-react';
+import { Clock, CheckCircle, AlertCircle, FileEdit, Filter, X, FileText, Calendar } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/authStore';
 import { Application, StudentProfile } from '../../types';
@@ -225,9 +225,10 @@ const StudentApplications = () => {
                   </div>
 
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                      Applied on {new Date(application.created_at).toLocaleDateString()}
-                    </span>
+                    <p className="text-sm text-gray-500 mt-1 flex items-center">
+                      <Calendar size={14} className="mr-1" />
+                      Applied on {new Date(application.created_at).toLocaleString()}
+                    </p>
                     {application.internship?.type && (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                         {application.internship.type}
@@ -254,9 +255,9 @@ const StudentApplications = () => {
 
                 <div className="border-t border-gray-100 bg-gray-50 px-6 py-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-500">
-                      Last updated: {new Date(application.updated_at).toLocaleDateString()}
-                    </span>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Last updated: {new Date(application.updated_at).toLocaleString()}
+                    </p>
                     <div className="flex gap-2">
                       {application.resume_url && (
                         <Button

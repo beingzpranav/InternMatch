@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { Toaster } from 'react-hot-toast';
 import { User } from 'lucide-react';
@@ -9,6 +8,7 @@ import { motion } from 'framer-motion';
 const AuthLayout = () => {
   const { user, isLoading, getUser } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     getUser();
@@ -32,38 +32,46 @@ const AuthLayout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+    <div className="flex flex-col min-h-screen">
+      <header className="py-4 px-6 bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
           <Link to="/" className="flex items-center">
-            <motion.div 
-              className="w-10 h-10 bg-primary-500 rounded-md flex items-center justify-center text-white mr-2"
+            <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              className="w-10 h-10 bg-primary-500 rounded-md flex items-center justify-center text-white mr-3"
             >
-              <User size={24} />
+              <User size={20} />
             </motion.div>
             <span className="text-xl font-bold text-primary-900">InternMatch</span>
           </Link>
+          <nav>
+            <Link to="/" className="text-gray-600 hover:text-primary-600 transition-colors">
+              Home
+            </Link>
+          </nav>
         </div>
       </header>
-
-      <main className="flex-grow flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="max-w-md w-full"
-        >
+      
+      <main className="flex-1 flex items-center justify-center bg-gray-50 p-4">
+        <div className="w-full max-w-md">
           <Outlet />
-        </motion.div>
+        </div>
       </main>
-
-      <footer className="bg-white">
-        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-sm text-gray-500">
-            &copy; {new Date().getFullYear()} InternMatch. All rights reserved.
-          </p>
+      
+      <footer className="py-4 px-6 bg-white border-t border-gray-200">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="text-sm text-gray-500">
+            <span>&copy; {new Date().getFullYear()} InternMatch. All rights reserved.</span>
+            <div className="mt-2 flex justify-center space-x-4">
+              <Link to="/privacy-policy" className="text-primary-600 hover:text-primary-800 transition-colors">
+                Privacy Policy
+              </Link>
+              <Link to="/terms-of-service" className="text-primary-600 hover:text-primary-800 transition-colors">
+                Terms of Service
+              </Link>
+            </div>
+          </div>
         </div>
       </footer>
 

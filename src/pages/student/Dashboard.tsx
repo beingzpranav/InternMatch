@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Briefcase, Clock, CheckCircle, XCircle, BarChart2, TrendingUp, BookmarkPlus, RefreshCw } from 'lucide-react';
+import { Briefcase, Clock, CheckCircle, XCircle, BarChart2, TrendingUp, BookmarkPlus, RefreshCw, FileText } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../store/authStore';
 import { Application, Internship } from '../../types';
@@ -14,6 +14,7 @@ const StudentDashboard = () => {
   const { user } = useAuthStore();
   const [recentApplications, setRecentApplications] = useState<Application[]>([]);
   const [recentInternships, setRecentInternships] = useState<Internship[]>([]);
+  const [hasResume, setHasResume] = useState<boolean>(false);
   const [stats, setStats] = useState({
     totalApplications: 0,
     pendingApplications: 0,
@@ -50,6 +51,17 @@ const StudentDashboard = () => {
         .limit(5);
 
       if (internshipsError) throw internshipsError;
+
+      // Check if the user has a resume
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('resume_url')
+        .eq('id', user.id)
+        .single();
+
+      if (!profileError && profileData) {
+        setHasResume(!!profileData.resume_url);
+      }
 
       // Fetch stats - using a simpler approach without group by
       const { data: allApplications, error: statsError } = await supabase
@@ -167,6 +179,31 @@ const StudentDashboard = () => {
         </Button>
       </div>
 
+      {/* Resume Status Card */}
+      {!hasResume && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-yellow-50 border border-yellow-200 rounded-xl p-4"
+        >
+          <div className="flex items-center space-x-3">
+            <div className="flex-shrink-0 bg-yellow-100 p-2 rounded-full">
+              <FileText className="text-yellow-500" size={20} />
+            </div>
+            <div className="flex-grow">
+              <h3 className="font-medium text-yellow-800">Resume Required</h3>
+              <p className="text-sm text-yellow-700">Upload your resume to apply for internships</p>
+            </div>
+            <Link to="/profile">
+              <Button size="sm" variant="secondary">
+                Upload Resume
+              </Button>
+            </Link>
+          </div>
+        </motion.div>
+      )}
+
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <motion.div
@@ -277,7 +314,7 @@ const StudentDashboard = () => {
                         {application.internship?.title || 'Internship'}
                       </h3>
                       <p className="text-sm text-gray-500 mt-1">
-                        Applied on {new Date(application.created_at).toLocaleDateString()}
+                        Applied on {new Date(application.created_at).toLocaleString()}
                       </p>
                     </div>
                     <div className="flex items-center">
@@ -345,7 +382,7 @@ const StudentDashboard = () => {
                     <div>
                       <h3 className="font-medium text-gray-900">{internship.title}</h3>
                       <p className="text-sm text-gray-500 mt-1">
-                        Posted on {new Date(internship.created_at).toLocaleDateString()}
+                        Posted on {new Date(internship.created_at).toLocaleString()}
                       </p>
                     </div>
                     <Link to={`/internships/${internship.id}`}>

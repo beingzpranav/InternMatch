@@ -38,6 +38,7 @@ const InternshipDetail = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [similarInternships, setSimilarInternships] = useState<Internship[]>([]);
   const [userResumeUrl, setUserResumeUrl] = useState<string | null>(null);
+  const [companyLogoUrl, setCompanyLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -46,6 +47,16 @@ const InternshipDetail = () => {
         checkBookmarkStatus();
         checkApplicationStatus();
         fetchUserResumeUrl();
+      }
+      
+      // Try to get company logo from localStorage
+      try {
+        const savedLogoUrl = localStorage.getItem('company_logo_url');
+        if (savedLogoUrl) {
+          setCompanyLogoUrl(savedLogoUrl);
+        }
+      } catch (err) {
+        console.warn('Could not retrieve logo URL from localStorage:', err);
       }
     }
   }, [id, user]);
@@ -313,7 +324,7 @@ const InternshipDetail = () => {
                 <div className="flex items-center text-gray-600">
                   <Clock size={18} className="mr-1.5" />
                   <span className="text-sm">
-                    Apply by {new Date(internship.deadline).toLocaleDateString()}
+                    Apply by {new Date(internship.deadline).toLocaleString()}
                   </span>
                 </div>
               )}
@@ -344,7 +355,7 @@ const InternshipDetail = () => {
                   <div>
                     <h3 className="font-medium text-primary-700">Application Submitted</h3>
                     <p className="text-sm text-primary-600">
-                      You applied on {new Date(application.created_at).toLocaleDateString()}
+                      You applied on {new Date(application.created_at).toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -456,8 +467,22 @@ const InternshipDetail = () => {
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">About the Company</h3>
             <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 mr-4">
-                <Building2 size={24} />
+              <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 mr-4 overflow-hidden">
+                {companyLogoUrl ? (
+                  <img 
+                    src={companyLogoUrl} 
+                    alt={(internship.company as any)?.company_name || 'Company'} 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (internship.company as any)?.avatar_url ? (
+                  <img 
+                    src={(internship.company as any).avatar_url} 
+                    alt={(internship.company as any)?.company_name || 'Company'} 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Building2 size={24} />
+                )}
               </div>
               <div>
                 <h4 className="font-medium text-gray-900">
@@ -548,7 +573,7 @@ const InternshipDetail = () => {
                       Application Submitted
                     </h4>
                     <p className="text-sm text-gray-500">
-                      {new Date(application.created_at).toLocaleDateString()}
+                      {new Date(application.created_at).toLocaleString()}
                     </p>
                   </div>
                 </div>
