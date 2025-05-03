@@ -1,0 +1,7 @@
+/* Toast theme variables */
+:root {
+  --toast-bg: #fff;
+  --toast-color: #333;
+  --toast-success-border: #22c55e;
+  --toast-error-border: #ef4444;
+} 
