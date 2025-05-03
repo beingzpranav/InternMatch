@@ -2,7 +2,9 @@
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ],
-  "buildCommand": "npm run build",
+  "routes": [
+    { "src": "/[^.]+", "dest": "/", "status": 200 }
+  ],
   "outputDirectory": "public",
   "framework": "vite",
   "installCommand": "npm install"
