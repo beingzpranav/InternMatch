@@ -403,7 +403,7 @@ const LandingPage = () => {
             viewport={{ once: true }}
           >
             <Link to="/auth/signup">
-              <Button size="lg" variant="outline" className="border-white text-blue hover:bg-white hover:text-primary-600">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary-600">
                 Get Started Today
               </Button>
             </Link>
