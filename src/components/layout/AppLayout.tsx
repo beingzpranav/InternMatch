@@ -44,7 +44,7 @@ const AppLayout = () => {
       <Navbar />
       
       {/* Mobile sidebar toggle button */}
-      <div className="md:hidden fixed bottom-6 right-6 z-40">
+      <div className="md:hidden fixed bottom-4 right-4 z-40">
         <motion.button
           onClick={toggleMobileSidebar}
           className="bg-primary-600 text-white p-3 rounded-full shadow-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
@@ -73,7 +73,7 @@ const AppLayout = () => {
             >
               {/* Backdrop */}
               <motion.div 
-                className="absolute inset-0 bg-black bg-opacity-50"
+                className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
                 onClick={toggleMobileSidebar}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -82,7 +82,7 @@ const AppLayout = () => {
               
               {/* Sidebar */}
               <motion.div
-                className="absolute left-0 top-0 bottom-0 w-64 bg-white"
+                className="absolute left-0 top-0 bottom-0 w-72 bg-white shadow-xl"
                 initial={{ x: -280 }}
                 animate={{ x: 0 }}
                 exit={{ x: -280 }}
@@ -94,7 +94,7 @@ const AppLayout = () => {
           )}
         </AnimatePresence>
 
-        <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
+        <main className="flex-1 p-3 sm:p-6 md:p-8 overflow-y-auto">
           <Outlet />
         </main>
       </div>
@@ -102,7 +102,7 @@ const AppLayout = () => {
       <Footer />
       
       <Toaster
-        position="top-right"
+        position="top-center"
         toastOptions={{
           duration: 4000,
           className: 'text-sm',
@@ -110,6 +110,8 @@ const AppLayout = () => {
             borderRadius: '8px',
             background: '#fff',
             color: '#333',
+            maxWidth: '90vw',
+            width: 'fit-content'
           },
           success: {
             style: {

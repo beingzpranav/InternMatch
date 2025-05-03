@@ -49,7 +49,7 @@ const Navbar = () => {
     <nav className={`fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 transition-all duration-200 ${
       scrolled ? 'shadow-md' : ''
     }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
@@ -60,7 +60,7 @@ const Navbar = () => {
               >
                 <User size={20} />
               </motion.div>
-              <span className="text-xl font-bold text-primary-900">InternMatch</span>
+              <span className="text-lg sm:text-xl font-bold text-primary-900">InternMatch</span>
             </Link>
           </div>
 
@@ -160,20 +160,20 @@ const Navbar = () => {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="md:hidden"
+            className="md:hidden shadow-lg"
           >
-            <div className="pt-2 pb-3 space-y-1 border-t border-gray-200">
+            <div className="pt-3 pb-4 space-y-2 border-t border-gray-200">
               {user ? (
                 <>
-                  <div className="flex items-center px-4 py-2 text-base font-medium text-gray-700">
+                  <div className="flex items-center px-4 py-3 text-sm font-medium text-gray-700">
                     <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 mr-2">
                       <User size={16} />
                     </div>
-                    <span>{user.full_name || user.email}</span>
+                    <span className="truncate max-w-[200px]">{user.full_name || user.email}</span>
                   </div>
                   <Link
                     to="/profile"
-                    className="block px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 active:bg-gray-200"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Your Profile
@@ -183,13 +183,13 @@ const Navbar = () => {
                       handleSignOut();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full text-left block px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-100"
+                    className="w-full text-left block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 active:bg-gray-200"
                   >
                     Sign Out
                   </button>
                 </>
               ) : (
-                <div className="px-4 py-2 space-y-2">
+                <div className="px-4 py-3 space-y-3">
                   <Link to="/auth/signin" className="w-full">
                     <Button variant="outline" fullWidth onClick={() => setIsMobileMenuOpen(false)}>
                       Sign In

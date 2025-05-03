@@ -39,7 +39,7 @@ export const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   ...props 
 }) => {
   return (
-    <div className={`p-5 border-b-2 border-gray-200 bg-gray-100 ${className}`} {...props}>
+    <div className={`p-4 sm:p-5 border-b-2 border-gray-200 bg-gray-100 ${className}`} {...props}>
       {children}
     </div>
   );
@@ -51,7 +51,7 @@ export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
   ...props 
 }) => {
   return (
-    <h3 className={`text-lg font-bold text-gray-900 ${className}`} {...props}>
+    <h3 className={`text-base sm:text-lg font-bold text-gray-900 ${className}`} {...props}>
       {children}
     </h3>
   );
@@ -63,7 +63,7 @@ export const CardDescription: React.FC<React.HTMLAttributes<HTMLParagraphElement
   ...props 
 }) => {
   return (
-    <p className={`text-sm text-gray-700 mt-1.5 ${className}`} {...props}>
+    <p className={`text-xs sm:text-sm text-gray-700 mt-1.5 ${className}`} {...props}>
       {children}
     </p>
   );
@@ -75,7 +75,7 @@ export const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   ...props 
 }) => {
   return (
-    <div className={`p-5 ${className}`} {...props}>
+    <div className={`p-4 sm:p-5 ${className}`} {...props}>
       {children}
     </div>
   );
@@ -87,7 +87,7 @@ export const CardFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   ...props 
 }) => {
   return (
-    <div className={`p-5 border-t-2 border-gray-200 bg-gray-100 ${className}`} {...props}>
+    <div className={`p-4 sm:p-5 border-t-2 border-gray-200 bg-gray-100 ${className}`} {...props}>
       {children}
     </div>
   );
