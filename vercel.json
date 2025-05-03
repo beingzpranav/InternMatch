@@ -1,11 +1,7 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
+  "version": 2,
   "routes": [
-    { "src": "/[^.]+", "dest": "/", "status": 200 }
-  ],
-  "outputDirectory": "public",
-  "framework": "vite",
-  "installCommand": "npm install"
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
 } 
