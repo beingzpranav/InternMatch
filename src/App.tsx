@@ -33,7 +33,6 @@ import AdminStudents from './pages/admin/Students';
 import AdminInternships from './pages/admin/Internships';
 import AdminApplications from './pages/admin/Applications';
 import ApplicationAnalytics from './pages/admin/ApplicationAnalytics';
-import AdminInterviews from './pages/admin/Interviews';
 import CompanyProfile from './pages/admin/CompanyProfile';
 
 // Shared pages
@@ -142,7 +141,6 @@ function App() {
           <Route path="admin/internships" element={user?.role === 'admin' ? <AdminInternships /> : <Navigate to="/dashboard" replace />} />
           <Route path="admin/applications" element={user?.role === 'admin' ? <AdminApplications /> : <Navigate to="/dashboard" replace />} />
           <Route path="admin/analytics" element={user?.role === 'admin' ? <ApplicationAnalytics /> : <Navigate to="/dashboard" replace />} />
-          <Route path="admin/interviews" element={user?.role === 'admin' ? <AdminInterviews /> : <Navigate to="/dashboard" replace />} />
         </Route>
 
         {/* Fallback route */}

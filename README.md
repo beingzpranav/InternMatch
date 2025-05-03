@@ -12,7 +12,6 @@ InternMatch is a comprehensive platform connecting students with companies for i
 - **Resume Management**: Upload, store and share resumes with potential employers
 - **Bookmarking**: Save favorite internship listings for later viewing
 - **Messaging**: Communicate directly with companies
-- **Interview Scheduling**: View and manage upcoming interviews
 - **Notifications**: Receive alerts about application status changes and messages
 
 ### For Companies
@@ -20,7 +19,6 @@ InternMatch is a comprehensive platform connecting students with companies for i
 - **Internship Creation**: Post detailed internship listings with requirements and deadlines
 - **Applicant Management**: Review, filter, and respond to student applications
 - **Candidate Evaluation**: Compare and assess applicant qualifications
-- **Interview Scheduling**: Arrange and manage interviews with candidates
 - **Messaging**: Communicate directly with applicants
 - **Company Profile**: Showcase company information, culture, and opportunities
 - **Notifications**: Receive alerts about new applications and messages
@@ -130,18 +128,7 @@ internmatch/
 └── README.md            # This file
 ```
 
-## UI Features
-
-### Mobile Responsiveness
-InternMatch is fully responsive and optimized for mobile devices with:
-
-- **Bottom Navigation Bar**: Easy access to key sections on mobile devices
-- **Touch-Optimized UI**: Larger touch targets for better mobile interaction
-- **Slide-Out Navigation Menu**: Access to all application features
-- **Responsive Layouts**: Adapts to various screen sizes from phones to desktops
-- **Optimized Forms**: Mobile-friendly form inputs and controls
-
-### Time Display Feature
+## Time Display Feature
 
 InternMatch includes comprehensive time display with all dates, showing both date and time information using the `toLocaleString()` method. This provides users with more detailed timestamps for:
 

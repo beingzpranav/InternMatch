@@ -19,16 +19,15 @@ import { motion } from 'framer-motion';
 
 interface SidebarProps {
   onItemClick?: () => void;
-  isMobile?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onItemClick, isMobile = false }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onItemClick }) => {
   const { user } = useAuthStore();
 
   if (!user) return null;
 
   const navLinkClasses = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+    `flex items-center space-x-3 px-4 py-2.5 rounded-lg transition-colors ${
       isActive
         ? 'bg-primary-50 text-primary-700 font-medium'
         : 'text-gray-700 hover:bg-gray-50'
@@ -58,7 +57,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onItemClick, isMobile = false }) => {
       { to: '/admin/internships', label: 'Internships', icon: <Briefcase size={20} /> },
       { to: '/admin/applications', label: 'Applications', icon: <FileText size={20} /> },
       { to: '/admin/analytics', label: 'Analytics', icon: <BarChart3 size={20} /> },
+     
       { to: '/messages', label: 'Messages', icon: <MessageSquare size={20} /> },
+      
     ],
   };
 
@@ -71,14 +72,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onItemClick, isMobile = false }) => {
   };
 
   return (
-    <div className={`w-full h-full ${isMobile ? 'bg-white pt-16' : 'border-r border-gray-200 bg-white hidden md:block w-64'}`}>
+    <div className="hidden md:block w-64 border-r border-gray-200 bg-white">
       <div className="h-full p-4">
-        {isMobile && (
-          <div className="mb-6 pb-4 border-b border-gray-200">
-            <div className="text-lg font-semibold text-gray-800">Menu</div>
-            <div className="text-sm text-gray-500">{user.full_name || user.email}</div>
-          </div>
-        )}
         <div className="space-y-1">
           {links.map((link) => (
             <NavLink 
@@ -89,7 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onItemClick, isMobile = false }) => {
             >
               {({ isActive }) => (
                 <motion.div
-                  className="flex items-center w-full"
+                  className="flex items-center"
                   whileHover={{ x: 2 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -98,7 +93,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onItemClick, isMobile = false }) => {
                     : 'text-gray-500'}`}>
                     {link.icon}
                   </span>
-                  <span className="text-base">{link.label}</span>
+                  {link.label}
                 </motion.div>
               )}
             </NavLink>

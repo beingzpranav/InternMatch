@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, User, LogOut, ChevronDown, X, AlignRight, Bell } from 'lucide-react';
+import { Menu, User, LogOut, ChevronDown, X, AlignRight } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import Button from '../ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,7 +12,6 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
-  const navbarRef = useRef<HTMLElement>(null);
 
   // Close menus when route changes
   useEffect(() => {
@@ -34,21 +33,6 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (navbarRef.current && !navbarRef.current.contains(event.target as Node)) {
-        setIsProfileOpen(false);
-        setIsMobileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
   const handleSignOut = async () => {
     await signOut();
   };
@@ -62,12 +46,9 @@ const Navbar = () => {
   };
 
   return (
-    <nav 
-      ref={navbarRef}
-      className={`fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 transition-all duration-200 ${
-        scrolled ? 'shadow-md' : ''
-      }`}
-    >
+    <nav className={`fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 transition-all duration-200 ${
+      scrolled ? 'shadow-md' : ''
+    }`}>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -164,25 +145,16 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile menu buttons */}
-          <div className="flex md:hidden items-center space-x-2">
-            {user && (
-              <button 
-                onClick={() => {}}  
-                className="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                aria-label="Notifications"
-              >
-                <Bell size={22} />
-              </button>
-            )}
+          {/* Mobile menu button */}
+          <div className="flex md:hidden items-center">
             <motion.button
               onClick={toggleMobileMenu}
-              className="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
               aria-label="Main menu"
               aria-expanded={isMobileMenuOpen}
               whileTap={{ scale: 0.9 }}
             >
-              {isMobileMenuOpen ? <X size={22} /> : <AlignRight size={22} />}
+              {isMobileMenuOpen ? <X size={24} /> : <AlignRight size={24} />}
             </motion.button>
           </div>
         </div>
@@ -196,13 +168,13 @@ const Navbar = () => {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="md:hidden shadow-lg border-t border-gray-100"
+            className="md:hidden shadow-lg"
           >
-            <div className="py-3 space-y-1 bg-white">
+            <div className="pt-3 pb-4 space-y-2 border-t border-gray-200">
               {user ? (
                 <>
-                  <div className="flex items-center px-4 py-3 text-sm font-medium text-gray-700 border-b border-gray-100 mb-2">
-                    <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 mr-3 overflow-hidden">
+                  <div className="flex items-center px-4 py-3 text-sm font-medium text-gray-700">
+                    <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 mr-2 overflow-hidden">
                       {user.avatar_url ? (
                         <img 
                           src={user.avatar_url} 
@@ -210,17 +182,14 @@ const Navbar = () => {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <User size={18} />
+                        <User size={16} />
                       )}
                     </div>
-                    <div>
-                      <div className="font-medium">{user.full_name || 'User'}</div>
-                      <div className="text-xs text-gray-500 truncate max-w-[180px]">{user.email}</div>
-                    </div>
+                    <span className="truncate max-w-[200px]">{user.full_name || user.email}</span>
                   </div>
                   <Link
                     to="/profile"
-                    className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100"
+                    className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 active:bg-gray-200"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Your Profile
@@ -230,7 +199,7 @@ const Navbar = () => {
                       handleSignOut();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full text-left block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100"
+                    className="w-full text-left block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 active:bg-gray-200"
                   >
                     Sign Out
                   </button>

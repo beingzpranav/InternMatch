@@ -12,6 +12,7 @@ import {
   ArcElement,
   PointElement,
   LineElement,
+  Filler,
 } from 'chart.js';
 import { Download, ArrowDown, ArrowUp, AlertTriangle, RefreshCw } from 'lucide-react';
 import Button from '../../components/ui/Button';
@@ -26,7 +27,8 @@ ChartJS.register(
   Legend,
   ArcElement,
   PointElement,
-  LineElement
+  LineElement,
+  Filler
 );
 
 interface ApplicationStats {
@@ -206,7 +208,7 @@ const ApplicationAnalytics: React.FC = () => {
     datasets: [
       {
         label: 'Applications by Company',
-        data: companyEntries.map(([_, count]) => count),
+        data: companyEntries.map(([, count]) => count),
         backgroundColor: 'rgba(54, 162, 235, 0.6)',
         borderColor: 'rgba(54, 162, 235, 1)',
         borderWidth: 1,
@@ -221,7 +223,7 @@ const ApplicationAnalytics: React.FC = () => {
     datasets: [
       {
         label: 'Applications by Internship',
-        data: internshipEntries.map(([_, count]) => count),
+        data: internshipEntries.map(([, count]) => count),
         backgroundColor: 'rgba(153, 102, 255, 0.6)',
         borderColor: 'rgba(153, 102, 255, 1)',
         borderWidth: 1,

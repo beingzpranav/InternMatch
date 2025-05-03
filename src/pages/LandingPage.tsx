@@ -1,25 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Briefcase, Users, Building2, ArrowRight, ChevronRight, Github, Linkedin, Globe, Twitter, Instagram, Mail } from 'lucide-react';
+import { Briefcase, Users, Building2, ArrowRight, ChevronRight } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../store/authStore';
-
-// Developer team information
-const devTeam = [
-  {
-    name: "Pranav Khandelwal",
-    role: "Lead Developer",
-    socials: [
-      { icon: <Github size={16} />, href: "https://github.com/beingzpranav", label: "GitHub" },
-      { icon: <Linkedin size={16} />, href: "https://linkedin.com/in/beingzpranav", label: "LinkedIn" },
-      { icon: <Globe size={16} />, href: "https://pranavk.tech", label: "Website" },
-      { icon: <Twitter size={16} />, href: "https://x.com/beingzpranav_", label: "Twitter" },
-      { icon: <Instagram size={16} />, href: "https://instagram.com/beingzpranav_", label: "Instagram" },
-      { icon: <Mail size={16} />, href: "mailto:contact@pranavk.tech", label: "Email" },
-    ]
-  },
-];
 
 const LandingPage = () => {
   const { user } = useAuthStore();
@@ -52,16 +36,7 @@ const LandingPage = () => {
             <span className="text-xl font-bold text-primary-900">InternMatch</span>
           </div>
           
-          <div className="flex items-center space-x-6">
-            {/* <a
-              href="/DATABASE_SETUP.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 hover:text-primary-600 transition-colors font-medium hidden sm:inline-block"
-            >
-              Developers
-            </a> */}
-            
+          <div className="flex items-center space-x-4">            
             {user ? (
               <Link to="/dashboard">
                 <Button>Go to Dashboard</Button>
@@ -84,9 +59,8 @@ const LandingPage = () => {
       <motion.section 
         className="bg-gradient-to-br from-primary-50 to-white py-20"
         initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
+        animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
-        viewport={{ once: true }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center">
@@ -94,9 +68,8 @@ const LandingPage = () => {
               <motion.h1 
                 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight"
                 initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                viewport={{ once: true }}
               >
                 Connect with opportunities that{' '}
                 <span className="text-primary-600">shape your future</span>
@@ -104,18 +77,16 @@ const LandingPage = () => {
               <motion.p 
                 className="text-lg text-gray-600 mb-8 max-w-md"
                 initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                viewport={{ once: true }}
               >
                 The platform where talented students meet innovative companies for internship opportunities
               </motion.p>
               <motion.div 
                 className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4"
                 initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                viewport={{ once: true }}
               >
                 <Link to="/auth/signup?role=student">
                   <Button size="lg" icon={<Users size={18} />}>
@@ -132,9 +103,8 @@ const LandingPage = () => {
             <motion.div 
               className="md:w-1/2 flex justify-center"
               initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5, duration: 0.5 }}
-              viewport={{ once: true }}
             >
               <img 
                 src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
@@ -152,9 +122,8 @@ const LandingPage = () => {
           <motion.div 
             className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            viewport={{ once: true }}
           >
             <h2 className="text-3xl font-bold text-gray-900 mb-4">How InternMatch Works</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -166,8 +135,7 @@ const LandingPage = () => {
             className="grid md:grid-cols-3 gap-8"
             variants={container}
             initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
+            animate="show"
           >
             <motion.div 
               className="bg-gradient-to-br from-primary-50 to-white p-8 rounded-xl shadow-sm border border-primary-100"
@@ -258,58 +226,6 @@ const LandingPage = () => {
                 Explore features <ArrowRight size={16} className="ml-1" />
               </Link>
             </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Developer Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Meet Our Team</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              The talented developers behind the InternMatch platform
-            </p>
-          </motion.div>
-
-          {/* Development Team */}
-          <motion.div
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-8"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <div className="flex flex-wrap justify-center gap-6">
-              {devTeam.map((member, index) => (
-                <div key={index} className="bg-gray-50 rounded-lg p-5 border border-gray-200 text-center max-w-xs">
-                  <h4 className="font-semibold text-gray-900 text-lg mb-1">{member.name}</h4>
-                  <p className="text-sm text-gray-600 mb-3">{member.role}</p>
-                  <div className="flex justify-center gap-3">
-                    {member.socials.map((social, idx) => (
-                      <motion.a
-                        key={idx}
-                        href={social.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-gray-500 hover:text-primary-600 transition-colors"
-                        aria-label={social.label}
-                        whileHover={{ scale: 1.2 }}
-                        whileTap={{ scale: 0.9 }}
-                      >
-                        {social.icon}
-                      </motion.a>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
           </motion.div>
         </div>
       </section>

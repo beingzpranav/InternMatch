@@ -481,7 +481,7 @@ const InternshipDetail = () => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <Building2 size={24} />
+                <Building2 size={24} />
                 )}
               </div>
               <div>

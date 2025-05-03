@@ -6,67 +6,25 @@ import { supabase } from '../../lib/supabase';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import { toast, Toaster } from 'react-hot-toast';
-import { StudentProfile } from '../../types';
+import { StudentProfile, Application as ApplicationType } from '../../types';
 import ApplicantProfile from '../../components/company/ApplicantProfile';
 import ApplicationDetails from '../../components/shared/ApplicationDetails';
 import ResumeViewer from '../../components/shared/ResumeViewer';
 import MessageButton from '../../components/shared/MessageButton';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-
-interface Application {
-  id: string;
-  internship_id: string;
-  student_id: string;
-  status: 'pending' | 'reviewing' | 'accepted' | 'rejected';
-  cover_letter: string | null;
-  resume_url: string | null;
-  created_at: string;
-  updated_at: string;
-  student: StudentProfile;
-  internship: {
-    title: string;
-    company_id: string;
-    company: {
-      company_name: string;
-    };
-  };
-}
-
-// Define a local interface for the application type being used in this component
-interface LocalApplication {
-  id: string;
-  internship_id: string;
-  student_id: string;
-  status: 'pending' | 'reviewing' | 'accepted' | 'rejected';
-  resume_url: string | null;
-  created_at: string;
-  updated_at: string;
-  student?: StudentProfile;
-  internship?: {
-    title: string;
-    company_id: string;
-    company: {
-      company_name: string;
-    };
-  };
-}
 
 const AdminApplications: React.FC = () => {
   const navigate = useNavigate();
-  const [applications, setApplications] = useState<Application[]>([]);
+  const [applications, setApplications] = useState<ApplicationType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudent, setSelectedStudent] = useState<StudentProfile | null>(null);
-  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+  const [selectedApplication, setSelectedApplication] = useState<ApplicationType | null>(null);
   const [viewingResume, setViewingResume] = useState<{student: StudentProfile, url: string} | null>(null);
   
   // Enhanced filtering options
   const [statusFilter, setStatusFilter] = useState('all');
   const [companyFilter, setCompanyFilter] = useState('all');
   const [internshipFilter, setInternshipFilter] = useState('all');
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   
   // Sorting options
@@ -136,11 +94,11 @@ const AdminApplications: React.FC = () => {
     setSelectedStudent(student);
   };
 
-  const handleViewApplication = (application: Application) => {
+  const handleViewApplication = (application: ApplicationType) => {
     setSelectedApplication(application);
   };
 
-  const handleViewResume = (application: LocalApplication) => {
+  const handleViewResume = (application: ApplicationType) => {
     if (!application.resume_url || !application.student) {
       toast.error('No resume available for this student');
       return;
@@ -168,7 +126,7 @@ const AdminApplications: React.FC = () => {
       // Update local state with type assertion
       setApplications(applications.map(app => 
         app.id === id ? { ...app, status, updated_at: new Date().toISOString() } : app
-      ) as Application[]);
+      ) as ApplicationType[]);
       
       // Restore toast notification to ensure visibility
       toast.success(`Application status updated to ${status}`, {
@@ -237,8 +195,6 @@ const AdminApplications: React.FC = () => {
     setStatusFilter('all');
     setCompanyFilter('all');
     setInternshipFilter('all');
-    setStartDate(null);
-    setEndDate(null);
   };
 
   // Add CSV export functionality
@@ -305,8 +261,8 @@ const AdminApplications: React.FC = () => {
       // Search term filter
       const matchesSearch = 
         application.student?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        application.internship?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        application.internship?.company?.company_name?.toLowerCase().includes(searchTerm.toLowerCase());
+        application.internship?.company?.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        application.internship?.title?.toLowerCase().includes(searchTerm.toLowerCase());
       
       // Status filter
       const matchesStatus = statusFilter === 'all' || application.status === statusFilter;
@@ -317,26 +273,17 @@ const AdminApplications: React.FC = () => {
       // Internship filter
       const matchesInternship = internshipFilter === 'all' || application.internship_id === internshipFilter;
       
-      // Date range filter
-      const applicationDate = new Date(application.created_at);
-      const matchesDateRange = 
-        (!startDate || applicationDate >= startDate) && 
-        (!endDate || applicationDate <= endDate);
-      
-      return matchesSearch && matchesStatus && matchesCompany && matchesInternship && matchesDateRange;
+      return matchesSearch && matchesStatus && matchesCompany && matchesInternship;
     })
     .sort((a, b) => {
-      let valueA, valueB;
+      let valueA = '';
+      let valueB = '';
       
       // Determine sort values based on the selected field
       switch (sortField) {
         case 'student':
           valueA = a.student?.full_name?.toLowerCase() || '';
           valueB = b.student?.full_name?.toLowerCase() || '';
-          break;
-        case 'internship':
-          valueA = a.internship?.title?.toLowerCase() || '';
-          valueB = b.internship?.title?.toLowerCase() || '';
           break;
         case 'company':
           valueA = a.internship?.company?.company_name?.toLowerCase() || '';
@@ -347,20 +294,18 @@ const AdminApplications: React.FC = () => {
           valueB = b.status;
           break;
         case 'created_at':
-          valueA = new Date(a.created_at).getTime();
-          valueB = new Date(b.created_at).getTime();
-          break;
+          return sortDirection === 'asc' 
+            ? new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+            : new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         default:
-          valueA = a[sortField as keyof Application];
-          valueB = b[sortField as keyof Application];
+          valueA = String(a[sortField as keyof ApplicationType] || '');
+          valueB = String(b[sortField as keyof ApplicationType] || '');
       }
       
       // Sorting direction
-      if (sortDirection === 'asc') {
-        return valueA > valueB ? 1 : -1;
-      } else {
-        return valueA < valueB ? 1 : -1;
-      }
+      return sortDirection === 'asc' 
+        ? valueA.localeCompare(valueB)
+        : valueB.localeCompare(valueA);
     });
 
   return (
@@ -478,41 +423,6 @@ const AdminApplications: React.FC = () => {
                     </option>
                   ))}
                 </select>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  From Date
-                </label>
-                <DatePicker
-                  selected={startDate}
-                  onChange={(date) => setStartDate(date)}
-                  selectsStart
-                  startDate={startDate}
-                  endDate={endDate}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                  placeholderText="Select start date"
-                  dateFormat="MMM d, yyyy"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  To Date
-                </label>
-                <DatePicker
-                  selected={endDate}
-                  onChange={(date) => setEndDate(date)}
-                  selectsEnd
-                  startDate={startDate}
-                  endDate={endDate}
-                  minDate={startDate}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                  placeholderText="Select end date"
-                  dateFormat="MMM d, yyyy"
-                />
               </div>
             </div>
             
@@ -661,7 +571,7 @@ const AdminApplications: React.FC = () => {
                             <button
                               className="flex items-center text-green-600 hover:text-green-800 bg-green-50 hover:bg-green-100 px-2 py-1 rounded-md text-sm"
                               title="View Resume"
-                              onClick={() => handleViewResume(application as LocalApplication)}
+                              onClick={() => handleViewResume(application)}
                             >
                               <FileText size={16} className="mr-1" />
                               Resume
@@ -681,7 +591,7 @@ const AdminApplications: React.FC = () => {
                 ) : (
                   <tr className="border-b border-gray-200">
                     <td colSpan={6} className="py-6 px-4 text-center text-gray-500">
-                      {searchTerm || statusFilter !== 'all' || companyFilter !== 'all' || internshipFilter !== 'all' || startDate || endDate ? 
+                      {searchTerm || statusFilter !== 'all' || companyFilter !== 'all' || internshipFilter !== 'all' ? 
                         'No applications found matching your filters' : 
                         'No applications found'}
                     </td>

@@ -194,60 +194,35 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
             <div className="flex-1 overflow-y-auto p-6">
               {activeTab === 'details' && (
                 <div className="space-y-6">
-                  <div className="flex flex-col md:flex-row gap-6 p-6">
+                  <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <Card>
+                      <Card variant="bordered" className="mb-6">
                         <CardHeader>
-                          <h3 className="text-lg font-semibold text-gray-900">Application Status</h3>
+                          <h3 className="text-lg font-semibold">Status</h3>
                         </CardHeader>
                         <CardContent>
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <span className="text-gray-600">Current Status</span>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
                               {getStatusBadge(application.status)}
+                              <span className="ml-2 text-gray-700">
+                                Last updated: {formatDate(application.updated_at || application.created_at)}
+                              </span>
                             </div>
-                            {onUpdateStatus && (
-                              <div className="flex flex-wrap gap-2">
+                            <div className="flex space-x-2">
+                              {application.resume_url && (
                                 <Button
                                   size="sm"
-                                  variant={application.status === 'reviewing' ? 'primary' : 'outline'}
-                                  onClick={() => onUpdateStatus('reviewing')}
-                                  icon={<Clock size={16} />}
+                                  variant="outline"
+                                  icon={<FileText size={16} />}
+                                  onClick={handleViewResume}
                                 >
-                                  Mark as Reviewing
+                                  View Resume
                                 </Button>
-                                <Button
-                                  size="sm"
-                                  variant={application.status === 'accepted' ? 'success' : 'outline'}
-                                  onClick={() => onUpdateStatus('accepted')}
-                                  icon={<CheckCircle size={16} />}
-                                >
-                                  Accept
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant={application.status === 'rejected' ? 'danger' : 'outline'}
-                                  onClick={() => onUpdateStatus('rejected')}
-                                  icon={<XCircle size={16} />}
-                                >
-                                  Reject
-                                </Button>
-                              </div>
-                            )}
+                              )}
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
-
-                      <div className="mt-6">
-                        <Button
-                          variant="outline"
-                          className="w-full"
-                          onClick={() => handleOpenMessageDialog('applicant')}
-                          icon={<MessageSquare size={16} />}
-                        >
-                          Message Applicant
-                        </Button>
-                      </div>
                     </div>
                   </div>
 

@@ -2,80 +2,81 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { LayoutDashboard, Users, Building2, Briefcase, FileText, Clock, BarChart3, Video } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+
+interface DashboardStats {
+  totalApplications: number;
+  pendingApplications: number;
+  totalInternships: number;
+  activeInternships: number;
+  totalStudents: number;
+  totalCompanies: number;
+}
+
+const initialStats: DashboardStats = {
+  totalApplications: 0,
+  pendingApplications: 0,
+  totalInternships: 0,
+  activeInternships: 0,
+  totalStudents: 0,
+  totalCompanies: 0
+};
 
 const AdminDashboard: React.FC = () => {
-  const [stats, setStats] = useState({
-    totalStudents: 0,
-    totalCompanies: 0,
-    totalInternships: 0,
-    activeApplications: 0,
-    totalInterviews: 0,
-    pendingInterviews: 0
-  });
+  const [stats, setStats] = useState<DashboardStats>(initialStats);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchDashboardStats();
+    fetchStats();
   }, []);
 
-  const fetchDashboardStats = async () => {
+  const fetchStats = async () => {
     setIsLoading(true);
     try {
-      // Get student count
-      const { count: studentCount, error: studentError } = await supabase
+      // Get total applications and pending applications
+      const { data: applicationStats, error: applicationError } = await supabase
+        .from('applications')
+        .select('status', { count: 'exact' });
+
+      if (applicationError) throw applicationError;
+
+      const pendingApplicationCount = applicationStats?.filter(app => app.status === 'pending').length;
+
+      // Get total and active internships
+      const { data: internshipStats, error: internshipError } = await supabase
+        .from('internships')
+        .select('status', { count: 'exact' });
+
+      if (internshipError) throw internshipError;
+
+      const activeInternshipCount = internshipStats?.filter(int => int.status === 'open').length;
+
+      // Get total students and companies
+      const { data: studentCount, error: studentError } = await supabase
         .from('profiles')
-        .select('*', { count: 'exact', head: true })
+        .select('role', { count: 'exact' })
         .eq('role', 'student');
 
       if (studentError) throw studentError;
 
-      // Get company count
-      const { count: companyCount, error: companyError } = await supabase
+      const { data: companyCount, error: companyError } = await supabase
         .from('profiles')
-        .select('*', { count: 'exact', head: true })
+        .select('role', { count: 'exact' })
         .eq('role', 'company');
 
       if (companyError) throw companyError;
 
-      // Get internship count
-      const { count: internshipCount, error: internshipError } = await supabase
-        .from('internships')
-        .select('*', { count: 'exact', head: true });
-
-      if (internshipError) throw internshipError;
-
-      // Get active application count
-      const { count: applicationCount, error: applicationError } = await supabase
-        .from('applications')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'pending');
-
-      if (applicationError) throw applicationError;
-      
-      // Get interview counts
-      const { count: totalInterviewCount, error: interviewError } = await supabase
-        .from('interviews')
-        .select('*', { count: 'exact', head: true });
-        
-      if (interviewError) {
-        console.error('Note: Interviews table may not exist yet:', interviewError);
-      }
-      
-      const { count: pendingInterviewCount } = await supabase
-        .from('interviews')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'scheduled');
-
       setStats({
-        totalStudents: studentCount || 0,
-        totalCompanies: companyCount || 0,
-        totalInternships: internshipCount || 0,
-        activeApplications: applicationCount || 0,
-        totalInterviews: totalInterviewCount || 0,
-        pendingInterviews: pendingInterviewCount || 0
+        totalApplications: applicationStats?.length || 0,
+        pendingApplications: pendingApplicationCount || 0,
+        totalInternships: internshipStats?.length || 0,
+        activeInternships: activeInternshipCount || 0,
+        totalStudents: studentCount?.length || 0,
+        totalCompanies: companyCount?.length || 0
       });
     } catch (error) {
-      console.error('Error fetching dashboard stats:', error);
+      console.error('Error fetching stats:', error);
+      toast.error('Failed to load dashboard statistics');
     } finally {
       setIsLoading(false);
     }
@@ -135,13 +136,6 @@ const AdminDashboard: React.FC = () => {
           icon={<BarChart3 className="text-primary-500" size={24} />} 
           link="/admin/analytics" 
         />
-        
-        <CardLink 
-          title="Interviews" 
-          description="Track and manage scheduled interviews" 
-          icon={<Video className="text-primary-500" size={24} />} 
-          link="/admin/interviews" 
-        />
       </div>
       
       <div className="mt-8 bg-white p-6 rounded-lg shadow-md">
@@ -182,14 +176,7 @@ const AdminDashboard: React.FC = () => {
                 <FileText className="text-gray-400 mr-2" size={18} />
                 Active Applications:
               </span>
-              <span className="font-medium text-primary-600">{stats.activeApplications}</span>
-            </p>
-            <p className="flex justify-between border-b pb-2">
-              <span className="flex items-center">
-                <Video className="text-gray-400 mr-2" size={18} />
-                Pending Interviews:
-              </span>
-              <span className="font-medium text-primary-600">{stats.pendingInterviews}</span>
+              <span className="font-medium text-primary-600">{stats.activeInternships}</span>
             </p>
             <p className="flex justify-between">
               <span className="flex items-center">

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { Toaster } from 'react-hot-toast';
 import { User } from 'lucide-react';
@@ -8,7 +8,6 @@ import { motion } from 'framer-motion';
 const AuthLayout = () => {
   const { user, isLoading, getUser } = useAuthStore();
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     getUser();
@@ -54,9 +53,7 @@ const AuthLayout = () => {
       </header>
       
       <main className="flex-1 flex items-center justify-center bg-gray-50 p-4">
-        <div className="w-full max-w-md">
-          <Outlet />
-        </div>
+        <Outlet />
       </main>
       
       <footer className="py-4 px-6 bg-white border-t border-gray-200">

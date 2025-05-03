@@ -130,7 +130,7 @@ const SignUpForm = () => {
             { value: 'company', label: 'Company' }
           ]}
         />
-
+        
         <Input
           label="Full Name"
           type="text"
@@ -141,7 +141,7 @@ const SignUpForm = () => {
           icon={<User size={18} />}
           required
         />
-
+        
         {role === 'company' && (
           <Input
             label="Company Name"
@@ -154,7 +154,7 @@ const SignUpForm = () => {
             required
           />
         )}
-
+        
         {role === 'student' && (
           <Input
             label="University"
@@ -178,7 +178,7 @@ const SignUpForm = () => {
           icon={<Mail size={18} />}
           required
         />
-
+        
         <Input
           label="Password"
           type="password"
@@ -189,7 +189,7 @@ const SignUpForm = () => {
           icon={<Lock size={18} />}
           required
         />
-
+        
         <Input
           label="Confirm Password"
           type="password"
@@ -200,7 +200,7 @@ const SignUpForm = () => {
           icon={<Lock size={18} />}
           required
         />
-
+        
         <div className="mt-4">
           <Button
             type="submit"
