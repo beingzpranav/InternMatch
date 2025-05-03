@@ -84,8 +84,9 @@ const LandingPage = () => {
       <motion.section 
         className="bg-gradient-to-br from-primary-50 to-white py-20"
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        whileInView={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center">
@@ -93,8 +94,9 @@ const LandingPage = () => {
               <motion.h1 
                 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight"
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
+                viewport={{ once: true }}
               >
                 Connect with opportunities that{' '}
                 <span className="text-primary-600">shape your future</span>
@@ -102,16 +104,18 @@ const LandingPage = () => {
               <motion.p 
                 className="text-lg text-gray-600 mb-8 max-w-md"
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
+                viewport={{ once: true }}
               >
                 The platform where talented students meet innovative companies for internship opportunities
               </motion.p>
               <motion.div 
                 className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4"
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
+                viewport={{ once: true }}
               >
                 <Link to="/auth/signup?role=student">
                   <Button size="lg" icon={<Users size={18} />}>
@@ -128,8 +132,9 @@ const LandingPage = () => {
             <motion.div 
               className="md:w-1/2 flex justify-center"
               initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+              whileInView={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5, duration: 0.5 }}
+              viewport={{ once: true }}
             >
               <img 
                 src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
@@ -147,8 +152,9 @@ const LandingPage = () => {
           <motion.div 
             className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
+            viewport={{ once: true }}
           >
             <h2 className="text-3xl font-bold text-gray-900 mb-4">How InternMatch Works</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -160,7 +166,8 @@ const LandingPage = () => {
             className="grid md:grid-cols-3 gap-8"
             variants={container}
             initial="hidden"
-            animate="show"
+            whileInView="show"
+            viewport={{ once: true }}
           >
             <motion.div 
               className="bg-gradient-to-br from-primary-50 to-white p-8 rounded-xl shadow-sm border border-primary-100"

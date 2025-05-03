@@ -13,8 +13,7 @@ import {
   ExternalLink,
   CheckCircle,
   XCircle,
-  MessageSquare,
-  Video
+  MessageSquare
 } from 'lucide-react';
 import { Application } from '../../types';
 import Button from '../ui/Button';
@@ -24,7 +23,6 @@ import ApplicantProfile from '../company/ApplicantProfile';
 import Dialog from '../ui/Dialog';
 import MessageForm from './MessageForm';
 import { toast } from 'react-hot-toast';
-import InterviewScheduler from './InterviewScheduler';
 
 interface ApplicationDetailsProps {
   application: Application;
@@ -43,7 +41,6 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
   const [viewStudentProfile, setViewStudentProfile] = useState(false);
   const [messageDialogOpen, setMessageDialogOpen] = useState(false);
   const [messageRecipient, setMessageRecipient] = useState<'applicant' | 'company'>('applicant');
-  const [showInterviewScheduler, setShowInterviewScheduler] = useState(false);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -107,19 +104,6 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
     if (application.resume_url) {
       setActiveTab('resume');
     }
-  };
-
-  const handleScheduleInterview = () => {
-    setShowInterviewScheduler(true);
-  };
-
-  const handleInterviewScheduled = () => {
-    setShowInterviewScheduler(false);
-    // Refresh the application data if needed
-    if (onUpdateStatus) {
-      onUpdateStatus('reviewing');
-    }
-    toast.success('Interview scheduled successfully');
   };
 
   return (
@@ -210,82 +194,60 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
             <div className="flex-1 overflow-y-auto p-6">
               {activeTab === 'details' && (
                 <div className="space-y-6">
-                  <div className="flex justify-between items-start">
+                  <div className="flex flex-col md:flex-row gap-6 p-6">
                     <div className="flex-1">
-                      <Card variant="bordered" className="mb-6">
+                      <Card>
                         <CardHeader>
-                          <h3 className="text-lg font-semibold">Status</h3>
+                          <h3 className="text-lg font-semibold text-gray-900">Application Status</h3>
                         </CardHeader>
                         <CardContent>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center">
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-600">Current Status</span>
                               {getStatusBadge(application.status)}
-                              <span className="ml-2 text-gray-700">
-                                Last updated: {formatDate(application.updated_at || application.created_at)}
-                              </span>
                             </div>
-                            <div className="flex space-x-2">
-                              {application.resume_url && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  icon={<FileText size={16} />}
-                                  onClick={handleViewResume}
-                                >
-                                  View Resume
-                                </Button>
-                              )}
-                              
-                              {(application.status === 'pending' || application.status === 'reviewing') && 
-                               application.student && !isAdmin && (
-                                <Button
-                                  size="sm"
-                                  variant="primary"
-                                  icon={<Video size={16} />}
-                                  onClick={handleScheduleInterview}
-                                >
-                                  Schedule Interview
-                                </Button>
-                              )}
-                            </div>
-                            
                             {onUpdateStatus && (
-                              <div className="flex space-x-2">
-                                {application.status !== 'accepted' && (
-                                  <Button
-                                    size="sm"
-                                    variant="success"
-                                    icon={<CheckCircle size={16} />}
-                                    onClick={() => onUpdateStatus('accepted')}
-                                  >
-                                    Accept
-                                  </Button>
-                                )}
-                                {application.status !== 'rejected' && (
-                                  <Button
-                                    size="sm"
-                                    variant="danger"
-                                    icon={<XCircle size={16} />}
-                                    onClick={() => onUpdateStatus('rejected')}
-                                  >
-                                    Reject
-                                  </Button>
-                                )}
-                                {application.status !== 'reviewing' && (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    icon={<Clock size={16} />}
-                                    onClick={() => onUpdateStatus('reviewing')}
-                                  >
-                                    Mark as Reviewing
-                                  </Button>
-                                )}
+                              <div className="flex flex-wrap gap-2">
+                                <Button
+                                  size="sm"
+                                  variant={application.status === 'reviewing' ? 'primary' : 'outline'}
+                                  onClick={() => onUpdateStatus('reviewing')}
+                                  icon={<Clock size={16} />}
+                                >
+                                  Mark as Reviewing
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant={application.status === 'accepted' ? 'success' : 'outline'}
+                                  onClick={() => onUpdateStatus('accepted')}
+                                  icon={<CheckCircle size={16} />}
+                                >
+                                  Accept
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant={application.status === 'rejected' ? 'danger' : 'outline'}
+                                  onClick={() => onUpdateStatus('rejected')}
+                                  icon={<XCircle size={16} />}
+                                >
+                                  Reject
+                                </Button>
                               </div>
                             )}
                           </div>
                         </CardContent>
                       </Card>
+
+                      <div className="mt-6">
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => handleOpenMessageDialog('applicant')}
+                          icon={<MessageSquare size={16} />}
+                        >
+                          Message Applicant
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
@@ -555,20 +517,6 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
               }
             />
           </Dialog>
-        )}
-      </AnimatePresence>
-
-      {/* Interview Scheduler Dialog */}
-      <AnimatePresence>
-        {showInterviewScheduler && application.student && (
-          <InterviewScheduler
-            applicationId={application.id}
-            studentId={application.student.id}
-            studentName={application.student.full_name || 'Applicant'}
-            studentEmail={application.student.email || ''}
-            onClose={() => setShowInterviewScheduler(false)}
-            onSuccess={handleInterviewScheduled}
-          />
         )}
       </AnimatePresence>
     </>
