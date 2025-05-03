@@ -229,14 +229,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   sendEmailVerification: async (email) => {
     try {
       set({ isLoading: true, error: null });
-
+      
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email,
       });
-
+      
       if (error) throw error;
-
+      
       set({ isLoading: false });
     } catch (error) {
       console.error('Error sending verification email:', error);

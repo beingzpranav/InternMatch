@@ -97,12 +97,14 @@ const CompanyApplications = () => {
         app.id === application.id ? { ...app, status: newStatus } : app
       ));
       
-      // Restore toast notification for explicit messages
-      toast.success(`Application ${newStatus}`, {
-        duration: 3000,
-        position: 'top-center',
-        icon: newStatus === 'accepted' ? '✅' : newStatus === 'rejected' ? '❌' : '🔍'
-      });
+      // Only show notification if the student is not online
+      if (!application.student?.is_online) {
+        toast.success(`Application ${newStatus}`, {
+          duration: 3000,
+          position: 'top-center',
+          icon: newStatus === 'accepted' ? '✅' : newStatus === 'rejected' ? '❌' : '🔍'
+        });
+      }
     } catch (error) {
       console.error('Error updating application status:', error);
       toast.error('Failed to update application status');
@@ -219,8 +221,6 @@ const CompanyApplications = () => {
       transition={{ duration: 0.5 }}
       className="space-y-6"
     >
-      <Toaster position="top-center" />
-      
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Review Applications</h1>
         <p className="text-gray-600 mt-1">Manage and review internship applications</p>

@@ -6,6 +6,18 @@ export interface User {
   full_name: string | null;
   role: UserRole;
   avatar_url: string | null;
+  bio: string | null;
+  location: string | null;
+  website: string | null;
+  company_name: string | null;
+  company_size: string | null;
+  company_industry: string | null;
+  university: string | null;
+  degree: string | null;
+  graduation_year: number | null;
+  resume_url: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface StudentProfile extends User {
@@ -15,6 +27,7 @@ export interface StudentProfile extends User {
   degree: string | null;
   graduation_year: number | null;
   resume_url: string | null;
+  is_online?: boolean;
 }
 
 export interface CompanyProfile extends User {

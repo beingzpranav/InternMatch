@@ -96,7 +96,11 @@ const ProfilePage = () => {
 
       await getUser();
       setIsEditing(false);
-      toast.success('Profile updated successfully');
+      
+      // Only show toast if no files were uploaded (to avoid duplicate notifications)
+      if (!formData.resume_url && !formData.avatar_url) {
+        toast.success('Profile updated successfully');
+      }
     } catch (error: any) {
       console.error('Error updating profile:', error);
       toast.error(error.message || 'Failed to update profile. Please try again.');

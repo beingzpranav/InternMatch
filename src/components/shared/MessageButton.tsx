@@ -53,80 +53,57 @@ const MessageButton: React.FC<MessageButtonProps> = ({
         return;
       }
 
-      // Company can message admins or students who have applied to their internships
-      if (user.role === 'company') {
-        // Can always message admins
-        const { data: adminData } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', recipientId)
-          .single();
+      // Get recipient's role
+      const { data: recipientData } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', recipientId)
+        .single();
 
-        if (adminData?.role === 'admin') {
-          setCanMessage(true);
-          setIsLoading(false);
-          return;
-        }
-
-        // Check if student has applied to any of this company's internships
-        if (internshipId) {
-          // If internshipId is provided, check only that internship
-          const { data: applicationData, error: applicationError } = await supabase
-            .from('applications')
-            .select('id')
-            .eq('student_id', recipientId)
-            .eq('internship_id', internshipId)
-            .maybeSingle();
-
-          setCanMessage(!!applicationData);
-        } else {
-          // Check if student has applied to any of the company's internships
-          const { data: companyInternships, error: internshipsError } = await supabase
-            .from('internships')
-            .select('id')
-            .eq('company_id', user.id);
-
-          if (companyInternships && companyInternships.length > 0) {
-            const internshipIds = companyInternships.map(internship => internship.id);
-            
-            const { data: applications, error: applicationsError } = await supabase
-              .from('applications')
-              .select('id')
-              .eq('student_id', recipientId)
-              .in('internship_id', internshipIds)
-              .maybeSingle();
-
-            setCanMessage(!!applications);
-          } else {
-            setCanMessage(false);
-          }
-        }
+      // Anyone can message admins
+      if (recipientData?.role === 'admin') {
+        setCanMessage(true);
+        setIsLoading(false);
+        return;
       }
 
-      // Students can only message if they've been contacted first or are contacting admins
-      if (user.role === 'student') {
-        // Can always message admins
-        const { data: adminData } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', recipientId)
-          .single();
-
-        if (adminData?.role === 'admin') {
-          setCanMessage(true);
+      // Company can only message students who have applied to their internships
+      if (user.role === 'company') {
+        if (recipientData?.role !== 'student') {
+          setCanMessage(false);
           setIsLoading(false);
           return;
         }
 
-        // Check if student was previously contacted by this recipient
-        const { data: previousMessages } = await supabase
-          .from('messages')
+        // Check if student has applied to any of the company's internships
+        const { data: applications } = await supabase
+          .from('applications')
           .select('id')
-          .eq('sender_id', recipientId)
-          .eq('recipient_id', user.id)
+          .eq('student_id', recipientId)
+          .eq('internship.company_id', user.id)
           .maybeSingle();
 
-        setCanMessage(!!previousMessages);
+        setCanMessage(!!applications);
+        setIsLoading(false);
+        return;
+      }
+
+      // Student can message admins and companies they've applied to
+      if (user.role === 'student') {
+        // Can message admins (already handled above)
+        if (recipientData?.role === 'company') {
+          // Check if student has applied to any of this company's internships
+          const { data: applications } = await supabase
+            .from('applications')
+            .select('id')
+            .eq('student_id', user.id)
+            .eq('internship.company_id', recipientId)
+            .maybeSingle();
+
+          setCanMessage(!!applications);
+        } else {
+          setCanMessage(false);
+        }
       }
     } catch (error) {
       console.error('Error checking messaging permissions:', error);

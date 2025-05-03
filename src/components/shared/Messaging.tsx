@@ -45,6 +45,7 @@ interface RecipientData {
   full_name: string;
   email: string;
   role: string;
+  is_online?: boolean;
 }
 
 const Messaging: React.FC = () => {
@@ -150,17 +151,115 @@ const Messaging: React.FC = () => {
     if (!user) return;
     
     try {
-      // For simplicity, just fetch all users
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name, email, role')
-        .neq('id', user.id);
-      
-      if (error) throw error;
-      
-      if (data) {
-        setRecipients(data);
+      let recipients: RecipientData[] = [];
+
+      // Admin can message everyone
+      if (user.role === 'admin') {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, full_name, email, role')
+          .neq('id', user.id);
+        
+        if (error) throw error;
+        recipients = data || [];
       }
+      
+      // Company can only message admins and students who applied
+      else if (user.role === 'company') {
+        // Get admins
+        const { data: admins, error: adminError } = await supabase
+          .from('profiles')
+          .select('id, full_name, email, role')
+          .eq('role', 'admin');
+        
+        if (adminError) throw adminError;
+        
+        // Get students who applied to company's internships
+        const { data: applications, error: appError } = await supabase
+          .from('applications')
+          .select(`
+            student_id,
+            internship:internships!inner (
+              company_id
+            ),
+            student:profiles!applications_student_id_fkey (
+              id,
+              full_name,
+              email,
+              role
+            )
+          `)
+          .eq('internship.company_id', user.id);
+        
+        if (appError) {
+          console.error('Error fetching student applications:', appError);
+          throw appError;
+        }
+        
+        const students = applications
+          ?.map(app => app.student)
+          .filter(Boolean) || [];
+        
+        recipients = [...(admins || []), ...students];
+      }
+      
+      // Student can message admins and companies they applied to
+      else if (user.role === 'student') {
+        // Get admins
+        const { data: admins, error: adminError } = await supabase
+          .from('profiles')
+          .select('id, full_name, email, role')
+          .eq('role', 'admin');
+        
+        if (adminError) throw adminError;
+        
+        // Get companies student applied to
+        const { data: applications, error: appError } = await supabase
+          .from('applications')
+          .select(`
+            internship:internships!inner (
+              company:profiles!internships_company_id_fkey (
+                id,
+                full_name,
+                email,
+                role
+              )
+            )
+          `)
+          .eq('student_id', user.id);
+        
+        if (appError) throw appError;
+        
+        const companies = applications
+          ?.map(app => app.internship?.company)
+          .filter(Boolean) || [];
+        
+        recipients = [...(admins || []), ...companies];
+      }
+      
+      // Remove duplicates based on id and filter out null/undefined values
+      const uniqueRecipients = Array.from(
+        new Map(
+          recipients
+            .filter(item => item && item.id && item.full_name && item.role)
+            .map(item => [item.id, item])
+        ).values()
+      );
+      
+      // Sort recipients by role and then by name
+      const sortedRecipients = uniqueRecipients.sort((a, b) => {
+        // First sort by role priority: admin > company > student
+        const roleOrder = { admin: 1, company: 2, student: 3 };
+        const roleCompare = (roleOrder[a.role as keyof typeof roleOrder] || 4) - 
+                          (roleOrder[b.role as keyof typeof roleOrder] || 4);
+        
+        if (roleCompare !== 0) return roleCompare;
+        
+        // Then sort alphabetically by name
+        return a.full_name.localeCompare(b.full_name);
+      });
+      
+      setRecipients(sortedRecipients);
     } catch (error) {
       console.error('Error fetching recipients:', error);
       toast.error('Failed to load recipients');
@@ -208,7 +307,11 @@ const Messaging: React.FC = () => {
       
       if (error) throw error;
       
-      toast.success('Message sent successfully!');
+      // Only show success toast if no notification system is handling it
+      const recipient = recipients.find(r => r.id === newMessage.recipient_id);
+      if (!recipient?.is_online) {
+        toast.success('Message sent successfully!');
+      }
       
       // Reset form and close modal
       setNewMessage({
@@ -446,11 +549,45 @@ const Messaging: React.FC = () => {
                   required
                 >
                   <option value="">Select Recipient</option>
-                  {recipients.map(recipient => (
-                    <option key={recipient.id} value={recipient.id}>
-                      {recipient.full_name} ({recipient.role})
-                    </option>
-                  ))}
+                  
+                  {/* Group: Admins */}
+                  {recipients.some(r => r.role === 'admin') && (
+                    <optgroup label="Administrators">
+                      {recipients
+                        .filter(r => r.role === 'admin')
+                        .map(recipient => (
+                          <option key={recipient.id} value={recipient.id}>
+                            {recipient.full_name}
+                          </option>
+                        ))}
+                    </optgroup>
+                  )}
+                  
+                  {/* Group: Companies */}
+                  {recipients.some(r => r.role === 'company') && (
+                    <optgroup label="Companies">
+                      {recipients
+                        .filter(r => r.role === 'company')
+                        .map(recipient => (
+                          <option key={recipient.id} value={recipient.id}>
+                            {recipient.full_name}
+                          </option>
+                        ))}
+                    </optgroup>
+                  )}
+                  
+                  {/* Group: Students */}
+                  {recipients.some(r => r.role === 'student') && (
+                    <optgroup label="Students">
+                      {recipients
+                        .filter(r => r.role === 'student')
+                        .map(recipient => (
+                          <option key={recipient.id} value={recipient.id}>
+                            {recipient.full_name}
+                          </option>
+                        ))}
+                    </optgroup>
+                  )}
                 </select>
               </div>
               

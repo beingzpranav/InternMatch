@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
-import { Toaster } from 'react-hot-toast';
 
 // Layouts
 import AppLayout from './components/layout/AppLayout';
@@ -54,99 +53,72 @@ function App() {
   }, [getUser]);
 
   return (
-    <>
-      <Toaster 
-        position="top-right"
-        toastOptions={{
-          duration: 5000,
-          style: {
-            background: '#fff',
-            color: '#333',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-            borderRadius: '8px',
-            padding: '12px 16px',
-          },
-          success: {
-            iconTheme: {
-              primary: '#10B981',
-              secondary: '#fff',
-            },
-          },
-          error: {
-            iconTheme: {
-              primary: '#EF4444',
-              secondary: '#fff',
-            },
-          },
-        }}
-      />
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/terms-of-service" element={<TermsOfService />} />
-        
-        {/* Auth routes */}
-        <Route path="/auth" element={<AuthLayout />}>
-          <Route path="signin" element={<SignInForm />} />
-          <Route path="signup" element={<SignUpForm />} />
-          <Route index element={<Navigate to="/auth/signin" replace />} />
-        </Route>
+    <Routes>
+      {/* Public routes */}
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms-of-service" element={<TermsOfService />} />
+      
+      {/* Auth routes */}
+      <Route path="/auth" element={<AuthLayout />}>
+        <Route path="signin" element={<SignInForm />} />
+        <Route path="signup" element={<SignUpForm />} />
+        <Route index element={<Navigate to="/auth/signin" replace />} />
+      </Route>
 
-        {/* Protected routes */}
-        <Route path="/" element={<AppLayout />}>
-          {/* Student routes */}
-          <Route 
-            path="dashboard" 
-            element={
-              user?.role === 'student' ? (
-                <StudentDashboard />
-              ) : user?.role === 'company' ? (
-                <CompanyDashboard />
-              ) : user?.role === 'admin' ? (
-                <Navigate to="/admin" replace />
-              ) : (
-                <Navigate to="/" replace />
-              )
-            } 
-          />
-          <Route path="internships" element={<InternshipsList />} />
-          <Route path="internships/:id" element={<InternshipDetail />} />
-          <Route 
-            path="applications" 
-            element={
-              user?.role === 'student' ? (
-                <StudentApplications />
-              ) : user?.role === 'company' ? (
-                <CompanyApplications />
-              ) : (
-                <Navigate to="/dashboard" replace />
-              )
-            } 
-          />
-          <Route path="bookmarks" element={<Bookmarks />} />
-          <Route path="profile" element={<ProfilePage />} />
-          <Route path="messages" element={<Messages />} />
+      {/* Protected routes */}
+      <Route path="/" element={<AppLayout />}>
+        {/* Student routes */}
+        <Route 
+          path="dashboard" 
+          element={
+            user?.role === 'student' ? (
+              <StudentDashboard />
+            ) : user?.role === 'company' ? (
+              <CompanyDashboard />
+            ) : user?.role === 'admin' ? (
+              <Navigate to="/admin" replace />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          } 
+        />
+        <Route path="internships" element={<InternshipsList />} />
+        <Route path="internships/:id" element={<InternshipDetail />} />
+        <Route 
+          path="applications" 
+          element={
+            user?.role === 'student' ? (
+              <StudentApplications />
+            ) : user?.role === 'company' ? (
+              <CompanyApplications />
+            ) : (
+              <Navigate to="/dashboard" replace />
+            )
+          } 
+        />
+        <Route path="bookmarks" element={<Bookmarks />} />
+        <Route path="profile" element={<ProfilePage />} />
+        <Route path="messages" element={<Messages />} />
 
-          {/* Company routes */}
-          <Route path="manage-internships" element={<ManageInternships />} />
-          <Route path="internships/create" element={<CreateEditInternship />} />
-          <Route path="internships/edit/:id" element={<CreateEditInternship />} />
+        {/* Company routes */}
+        <Route path="manage-internships" element={<ManageInternships />} />
+        <Route path="internships/create" element={<CreateEditInternship />} />
+        <Route path="internships/edit/:id" element={<CreateEditInternship />} />
 
-          {/* Admin routes */}
-          <Route path="admin" element={user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/dashboard" replace />} />
-          <Route path="admin/companies" element={user?.role === 'admin' ? <AdminCompanies /> : <Navigate to="/dashboard" replace />} />
-          <Route path="admin/companies/:id" element={user?.role === 'admin' ? <CompanyProfile /> : <Navigate to="/dashboard" replace />} />
-          <Route path="admin/students" element={user?.role === 'admin' ? <AdminStudents /> : <Navigate to="/dashboard" replace />} />
-          <Route path="admin/internships" element={user?.role === 'admin' ? <AdminInternships /> : <Navigate to="/dashboard" replace />} />
-          <Route path="admin/applications" element={user?.role === 'admin' ? <AdminApplications /> : <Navigate to="/dashboard" replace />} />
-          <Route path="admin/analytics" element={user?.role === 'admin' ? <ApplicationAnalytics /> : <Navigate to="/dashboard" replace />} />
-        </Route>
+        {/* Admin routes */}
+        <Route path="admin" element={user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/dashboard" replace />} />
+        <Route path="admin/companies" element={user?.role === 'admin' ? <AdminCompanies /> : <Navigate to="/dashboard" replace />} />
+        <Route path="admin/companies/:id" element={user?.role === 'admin' ? <CompanyProfile /> : <Navigate to="/dashboard" replace />} />
+        <Route path="admin/students" element={user?.role === 'admin' ? <AdminStudents /> : <Navigate to="/dashboard" replace />} />
+        <Route path="admin/internships" element={user?.role === 'admin' ? <AdminInternships /> : <Navigate to="/dashboard" replace />} />
+        <Route path="admin/applications" element={user?.role === 'admin' ? <AdminApplications /> : <Navigate to="/dashboard" replace />} />
+        <Route path="admin/analytics" element={user?.role === 'admin' ? <ApplicationAnalytics /> : <Navigate to="/dashboard" replace />} />
+      </Route>
 
-        {/* Fallback route */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </>
+      {/* Fallback route */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 

@@ -128,13 +128,15 @@ const AdminApplications: React.FC = () => {
         app.id === id ? { ...app, status, updated_at: new Date().toISOString() } : app
       ) as ApplicationType[]);
       
-      // Restore toast notification to ensure visibility
-      toast.success(`Application status updated to ${status}`, {
-        duration: 3000,
-        position: 'top-center',
-        icon: status === 'accepted' ? '✅' : status === 'rejected' ? '❌' : '🔍'
-      });
-      
+      // Only show notification if the student is not online
+      const application = applications.find(app => app.id === id);
+      if (!application?.student?.is_online) {
+        toast.success(`Application status updated to ${status}`, {
+          duration: 3000,
+          position: 'top-center',
+          icon: status === 'accepted' ? '✅' : status === 'rejected' ? '❌' : '🔍'
+        });
+      }
     } catch (error) {
       console.error('Error updating application status:', error);
       toast.error('Failed to update application status');
