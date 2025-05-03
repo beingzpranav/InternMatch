@@ -103,7 +103,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: 'https://intermatch.pranavk.tech/dashboard'
+          redirectTo: 'https://intermatch.pranavk.tech/auth/signin'
         }
       });
 
