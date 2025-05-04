@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { supabase } from '../../lib/supabase';
 import Button from '../ui/Button';
@@ -14,10 +14,24 @@ const fadeInUp = {
 
 const ResetPassword = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [type, setType] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Get the type from URL parameters
+    const params = new URLSearchParams(location.hash.substring(1));
+    const typeParam = params.get('type');
+    setType(typeParam);
+
+    // If not a recovery attempt, redirect to sign in
+    if (typeParam !== 'recovery') {
+      navigate('/auth/signin');
+    }
+  }, [location, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +50,22 @@ const ResetPassword = () => {
       setIsLoading(true);
       setError(null);
 
+      // Get the access token from the URL
+      const params = new URLSearchParams(location.hash.substring(1));
+      const accessToken = params.get('access_token');
+
+      if (!accessToken) {
+        throw new Error('No access token found in URL');
+      }
+
+      // Set the access token in Supabase
+      const { data: { user }, error: sessionError } = await supabase.auth.getUser(accessToken);
+      
+      if (sessionError || !user) {
+        throw sessionError || new Error('Failed to get user');
+      }
+
+      // Update the password
       const { error: updateError } = await supabase.auth.updateUser({
         password: password
       });
@@ -52,6 +82,11 @@ const ResetPassword = () => {
       setIsLoading(false);
     }
   };
+
+  // If not a recovery attempt, don't render the form
+  if (type !== 'recovery') {
+    return null;
+  }
 
   return (
     <motion.div
