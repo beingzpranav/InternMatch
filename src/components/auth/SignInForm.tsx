@@ -182,9 +182,12 @@ const SignInForm = () => {
           label="Email address"
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter your email"
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setErrors({});
+          }}
           error={errors.email}
+          placeholder="Enter your email"
           icon={<Mail size={18} />}
           autoComplete="email"
           required
@@ -194,44 +197,27 @@ const SignInForm = () => {
           label="Password"
           type="password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Enter your password"
+          onChange={(e) => {
+            setPassword(e.target.value);
+            setErrors({});
+          }}
           error={errors.password}
+          placeholder="Enter your password"
           icon={<Lock size={18} />}
           autoComplete="current-password"
           required
         />
 
-        <div className="flex items-center justify-between mt-4">
-          <div className="flex items-center">
-            <input
-              id="remember-me"
-              name="remember-me"
-              type="checkbox"
-              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded cursor-pointer"
-            />
-            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 cursor-pointer">
-              Remember me
-            </label>
-          </div>
-
-          <Link 
-            to="/auth/forgot-password" 
-            className="text-primary-600 hover:text-primary-500 font-medium text-sm flex items-center"
+        <div className="flex flex-col gap-3">
+          <Button
+            type="submit"
+            fullWidth
+            isLoading={isLoading}
+            className="py-2.5"
           >
-            Forgot password?
-            <CornerUpRight size={14} className="ml-1" />
-          </Link>
+            Sign in
+          </Button>
         </div>
-
-        <Button
-          type="submit"
-          fullWidth
-          isLoading={isLoading}
-          className="mt-6 py-2.5"
-        >
-          Sign in
-        </Button>
       </motion.form>
     </motion.div>
   );
