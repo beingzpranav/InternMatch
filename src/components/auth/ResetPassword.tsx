@@ -22,13 +22,21 @@ const ResetPassword = () => {
   const [type, setType] = useState<string | null>(null);
 
   useEffect(() => {
-    // Get the type from URL parameters
-    const params = new URLSearchParams(location.hash.substring(1));
-    const typeParam = params.get('type');
-    setType(typeParam);
+    // Parse the full URL hash
+    const hashParams = location.hash
+      .substring(1)
+      .split('#')
+      .reduce((params, hash) => {
+        const [key, value] = hash.split('=');
+        return { ...params, [key]: value };
+      }, {} as Record<string, string>);
 
-    // If not a recovery attempt, redirect to sign in
-    if (typeParam !== 'recovery') {
+    // Check if this is a recovery attempt and we have an access token
+    if (hashParams.type === 'recovery' && hashParams.access_token) {
+      setType('recovery');
+      // Store the access token for later use
+      localStorage.setItem('resetAccessToken', hashParams.access_token);
+    } else {
       navigate('/auth/signin');
     }
   }, [location, navigate]);
@@ -50,19 +58,21 @@ const ResetPassword = () => {
       setIsLoading(true);
       setError(null);
 
-      // Get the access token from the URL
-      const params = new URLSearchParams(location.hash.substring(1));
-      const accessToken = params.get('access_token');
+      // Get the stored access token
+      const accessToken = localStorage.getItem('resetAccessToken');
 
       if (!accessToken) {
-        throw new Error('No access token found in URL');
+        throw new Error('No access token found');
       }
 
-      // Set the access token in Supabase
-      const { data: { user }, error: sessionError } = await supabase.auth.getUser(accessToken);
-      
-      if (sessionError || !user) {
-        throw sessionError || new Error('Failed to get user');
+      // Set the session with the access token
+      const { data: { session }, error: sessionError } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: '',
+      });
+
+      if (sessionError || !session) {
+        throw sessionError || new Error('Failed to set session');
       }
 
       // Update the password
@@ -71,6 +81,9 @@ const ResetPassword = () => {
       });
 
       if (updateError) throw updateError;
+
+      // Clear the stored token
+      localStorage.removeItem('resetAccessToken');
 
       toast.success('Password updated successfully!');
       navigate('/auth/signin');
