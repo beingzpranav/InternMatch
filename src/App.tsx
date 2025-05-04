@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
+import { supabase } from './lib/supabase';
 
 // Layouts
 import AppLayout from './components/layout/AppLayout';
@@ -49,9 +50,17 @@ import LandingPage from './pages/LandingPage';
 function App() {
   const { getUser, user } = useAuthStore();
 
-  // Fetch user data on mount
+  // Initialize auth state
   useEffect(() => {
-    getUser();
+    // Get initial session
+    const initializeAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await getUser();
+      }
+    };
+
+    initializeAuth();
   }, [getUser]);
 
   return (

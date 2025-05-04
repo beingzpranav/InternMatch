@@ -16,6 +16,28 @@ interface AuthState {
   isEmailVerificationError: boolean;
 }
 
+// Initialize session listener
+supabase.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+    // Get user data and update store
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (authUser) {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authUser.id)
+        .maybeSingle();
+
+      if (profileData) {
+        useAuthStore.setState({ user: profileData as User, isLoading: false });
+      }
+    }
+  } else if (event === 'SIGNED_OUT') {
+    // Clear user data from store
+    useAuthStore.setState({ user: null, isLoading: false });
+  }
+});
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isLoading: true,
