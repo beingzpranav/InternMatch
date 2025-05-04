@@ -31,7 +31,7 @@ const ForgotPassword = () => {
       setError(null);
 
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
+        redirectTo: 'https://internmatch.pranavk.tech/auth/reset-password',
       });
 
       if (resetError) throw resetError;
