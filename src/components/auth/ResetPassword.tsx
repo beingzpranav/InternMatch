@@ -19,27 +19,31 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [type, setType] = useState<string | null>(null);
 
   useEffect(() => {
-    // Parse the full URL hash
-    const hashParams = location.hash
-      .substring(1)
-      .split('#')
-      .reduce((params, hash) => {
-        const [key, value] = hash.split('=');
-        return { ...params, [key]: value };
-      }, {} as Record<string, string>);
+    const handleRecoveryToken = async () => {
+      try {
+        // Get the hash parameters
+        const hashParams = new URLSearchParams(window.location.hash.slice(1));
+        const type = hashParams.get('type');
+        
+        // If not a recovery attempt, redirect to sign in
+        if (type !== 'recovery') {
+          navigate('/auth/signin');
+          return;
+        }
 
-    // Check if this is a recovery attempt and we have an access token
-    if (hashParams.type === 'recovery' && hashParams.access_token) {
-      setType('recovery');
-      // Store the access token for later use
-      localStorage.setItem('resetAccessToken', hashParams.access_token);
-    } else {
-      navigate('/auth/signin');
-    }
-  }, [location, navigate]);
+        // Sign out any existing session
+        await supabase.auth.signOut();
+
+      } catch (err) {
+        console.error('Error handling recovery:', err);
+        navigate('/auth/signin');
+      }
+    };
+
+    handleRecoveryToken();
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,34 +62,25 @@ const ResetPassword = () => {
       setIsLoading(true);
       setError(null);
 
-      // Get the stored access token
-      const accessToken = localStorage.getItem('resetAccessToken');
+      // Get the hash parameters
+      const hashParams = new URLSearchParams(window.location.hash.slice(1));
+      const accessToken = hashParams.get('access_token');
 
       if (!accessToken) {
         throw new Error('No access token found');
       }
 
-      // Set the session with the access token
-      const { data: { session }, error: sessionError } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: '',
-      });
-
-      if (sessionError || !session) {
-        throw sessionError || new Error('Failed to set session');
-      }
-
-      // Update the password
+      // Update the password using the access token
       const { error: updateError } = await supabase.auth.updateUser({
         password: password
       });
 
       if (updateError) throw updateError;
 
-      // Clear the stored token
-      localStorage.removeItem('resetAccessToken');
+      // Sign out after password update
+      await supabase.auth.signOut();
 
-      toast.success('Password updated successfully!');
+      toast.success('Password updated successfully! Please sign in with your new password.');
       navigate('/auth/signin');
     } catch (err) {
       console.error('Error updating password:', err);
@@ -95,11 +90,6 @@ const ResetPassword = () => {
       setIsLoading(false);
     }
   };
-
-  // If not a recovery attempt, don't render the form
-  if (type !== 'recovery') {
-    return null;
-  }
 
   return (
     <motion.div
