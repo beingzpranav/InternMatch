@@ -154,7 +154,7 @@ const TermsOfService = () => {
             If you have any questions about these Terms, please contact us:
           </p>
           <ul className="list-disc pl-6 mb-4">
-            <li>By email: contact@internmatch.com</li>
+            <li>By email: contact@pranavk.tech</li>
           </ul>
         </section>
       </div>

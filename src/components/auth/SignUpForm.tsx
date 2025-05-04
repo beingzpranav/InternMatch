@@ -9,6 +9,11 @@ import { Mail, Lock, User, Building2, GraduationCap, Github } from 'lucide-react
 import { UserRole } from '../../types';
 import { motion } from 'framer-motion';
 
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+};
+
 const SignUpForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,7 +24,7 @@ const SignUpForm = () => {
   const [university, setUniversity] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   
-  const { signUp, signInWithGithub, isLoading, error } = useAuthStore();
+  const { signUp, signInWithGithub, signInWithGoogle, isLoading, error } = useAuthStore();
 
   const validateForm = () => {
     const formErrors: Record<string, string> = {};
@@ -74,6 +79,15 @@ const SignUpForm = () => {
     }
   };
 
+  const handleGoogleSignUp = async () => {
+    try {
+      await signInWithGoogle();
+      toast.success('Signing in with Google...');
+    } catch (err) {
+      // Error is already set in the store
+    }
+  };
+
   return (
     <motion.div 
       className="bg-white shadow-md rounded-xl p-6 sm:p-8"
@@ -97,19 +111,35 @@ const SignUpForm = () => {
         </div>
       )}
 
-      {/* Social Sign Up Buttons */}
-      <div className="flex flex-col gap-3 mb-6">
+      {/* Social Login Buttons */}
+      <motion.div variants={fadeInUp} className="grid grid-cols-2 gap-3 mb-6">
+        <Button
+          onClick={handleGoogleSignUp}
+          variant="outline"
+          fullWidth
+          disabled={isLoading}
+          className="border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 h-11 relative pl-11"
+        >
+          <span className="absolute left-3 top-1/2 -translate-y-1/2">
+            <img 
+              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
+              alt="Google" 
+              className="w-5 h-5" 
+            />
+          </span>
+          Google
+        </Button>
         <Button
           onClick={handleGithubSignUp}
           variant="outline"
           fullWidth
           disabled={isLoading}
           icon={<Github size={18} />}
-          className="border-gray-300 text-gray-800 bg-white hover:bg-gray-100"
+          className="border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 h-11"
         >
-          Continue with GitHub
+          GitHub
         </Button>
-      </div>
+      </motion.div>
 
       <div className="relative my-6">
         <div className="absolute inset-0 flex items-center">

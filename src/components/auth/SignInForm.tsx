@@ -20,6 +20,7 @@ const SignInForm = () => {
   const { 
     signIn, 
     signInWithGithub,
+    signInWithGoogle,
     sendEmailVerification, 
     isLoading, 
     error, 
@@ -52,6 +53,16 @@ const SignInForm = () => {
   const handleGithubSignIn = async () => {
     try {
       await signInWithGithub();
+      toast.success('Signing in with GitHub...');
+    } catch (err) {
+      // Error is already set in the store
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+      toast.success('Signing in with Google...');
     } catch (err) {
       // Error is already set in the store
     }
@@ -84,14 +95,14 @@ const SignInForm = () => {
           }
         }
       }}
-      className="bg-white shadow-md rounded-xl p-6 sm:p-8"
+      className="bg-white shadow-md rounded-xl p-6 sm:p-8 w-full max-w-md mx-auto"
     >
-      <motion.div variants={fadeInUp} className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Sign in to your account</h2>
+      <motion.div variants={fadeInUp} className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
         <p className="mt-2 text-gray-600">
-          Don't have an account?{' '}
+          New to InternMatch?{' '}
           <Link to="/auth/signup" className="text-primary-600 hover:text-primary-500 font-medium">
-            Sign up
+            Create an account
           </Link>
         </p>
       </motion.div>
@@ -104,31 +115,56 @@ const SignInForm = () => {
             exit={{ opacity: 0, y: -10 }}
             className="mb-4 p-3 bg-error-50 border border-error-200 text-error-700 rounded-lg"
           >
-            {error}
-            {isEmailVerificationError && (
-              <button
-                onClick={handleResendVerification}
-                className="flex items-center mt-2 text-primary-600 hover:text-primary-500 text-sm font-medium"
-              >
-                <RefreshCw size={14} className="mr-1" />
-                Resend verification email
-              </button>
-            )}
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-error-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm">{error}</p>
+                {isEmailVerificationError && (
+                  <button
+                    onClick={handleResendVerification}
+                    className="flex items-center mt-2 text-primary-600 hover:text-primary-500 text-sm font-medium"
+                  >
+                    <RefreshCw size={14} className="mr-1" />
+                    Resend verification email
+                  </button>
+                )}
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Social Login Buttons */}
-      <motion.div variants={fadeInUp} className="flex flex-col gap-3 mb-6">
+      <motion.div variants={fadeInUp} className="grid grid-cols-2 gap-3 mb-6">
+        <Button
+          onClick={handleGoogleSignIn}
+          variant="outline"
+          fullWidth
+          disabled={isLoading}
+          className="border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 h-11 relative pl-11"
+        >
+          <span className="absolute left-3 top-1/2 -translate-y-1/2">
+            <img 
+              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
+              alt="Google" 
+              className="w-5 h-5" 
+            />
+          </span>
+          Google
+        </Button>
         <Button
           onClick={handleGithubSignIn}
           variant="outline"
           fullWidth
           disabled={isLoading}
           icon={<Github size={18} />}
-          className="border-gray-300 text-gray-800 bg-white hover:bg-gray-100"
+          className="border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 h-11"
         >
-          Continue with GitHub
+          GitHub
         </Button>
       </motion.div>
 
@@ -172,15 +208,19 @@ const SignInForm = () => {
               id="remember-me"
               name="remember-me"
               type="checkbox"
-              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded cursor-pointer"
             />
-            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 cursor-pointer">
               Remember me
             </label>
           </div>
 
-          <Link to="/auth/forgot-password" className="text-primary-600 hover:text-primary-500 font-medium text-sm">
+          <Link 
+            to="/auth/forgot-password" 
+            className="text-primary-600 hover:text-primary-500 font-medium text-sm flex items-center"
+          >
             Forgot password?
+            <CornerUpRight size={14} className="ml-1" />
           </Link>
         </div>
 
@@ -188,7 +228,7 @@ const SignInForm = () => {
           type="submit"
           fullWidth
           isLoading={isLoading}
-          className="mt-6"
+          className="mt-6 py-2.5"
         >
           Sign in
         </Button>

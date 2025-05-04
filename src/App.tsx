@@ -9,6 +9,8 @@ import AuthLayout from './components/auth/AuthLayout';
 // Auth pages
 import SignInForm from './components/auth/SignInForm';
 import SignUpForm from './components/auth/SignUpForm';
+import ForgotPassword from './components/auth/ForgotPassword';
+import ResetPassword from './components/auth/ResetPassword';
 
 // Student pages
 import StudentDashboard from './pages/student/Dashboard';
@@ -63,6 +65,8 @@ function App() {
       <Route path="/auth" element={<AuthLayout />}>
         <Route path="signin" element={<SignInForm />} />
         <Route path="signup" element={<SignUpForm />} />
+        <Route path="forgot-password" element={<ForgotPassword />} />
+        <Route path="reset-password" element={<ResetPassword />} />
         <Route index element={<Navigate to="/auth/signin" replace />} />
       </Route>
 

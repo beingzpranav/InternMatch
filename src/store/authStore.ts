@@ -9,6 +9,7 @@ interface AuthState {
   signUp: (email: string, password: string, role: UserRole, userData: Record<string, any>) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGithub: () => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   getUser: () => Promise<void>;
   sendEmailVerification: (email: string) => Promise<void>;
@@ -109,6 +110,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Note: User will be set after redirect via getUser()
     } catch (error) {
       console.error('Error during GitHub sign in:', error);
+      set({ error: (error as Error).message, isLoading: false, isEmailVerificationError: false });
+    }
+  },
+
+  signInWithGoogle: async () => {
+    try {
+      set({ isLoading: true, error: null, isEmailVerificationError: false });
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (error) throw error;
+      
+      // Note: User will be set after redirect via getUser()
+    } catch (error) {
+      console.error('Error during Google sign in:', error);
       set({ error: (error as Error).message, isLoading: false, isEmailVerificationError: false });
     }
   },
